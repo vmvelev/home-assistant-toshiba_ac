@@ -1,9 +1,9 @@
-[![HACS Validate](https://github.com/h4de5/home-assistant-toshiba_ac/actions/workflows/validate.yml/badge.svg)](https://github.com/h4de5/home-assistant-toshiba_ac/actions/workflows/validate.yml)
-[![hassfest Validate](https://github.com/h4de5/home-assistant-toshiba_ac/actions/workflows/hassfest.yml/badge.svg)](https://github.com/h4de5/home-assistant-toshiba_ac/actions/workflows/hassfest.yml)
-[![Github Release](https://img.shields.io/github/release/h4de5/home-assistant-toshiba_ac.svg)](https://github.com/h4de5/home-assistant-toshiba_ac/releases)
-[![Github Commit since](https://img.shields.io/github/commits-since/h4de5/home-assistant-toshiba_ac/latest?sort=semver)](https://github.com/h4de5/home-assistant-toshiba_ac/releases)
-[![Github Open Issues](https://img.shields.io/github/issues/h4de5/home-assistant-toshiba_ac.svg)](https://github.com/h4de5/home-assistant-toshiba_ac/issues)
-[![Github Open Pull Requests](https://img.shields.io/github/issues-pr/h4de5/home-assistant-toshiba_ac.svg)](https://github.com/h4de5/home-assistant-toshiba_ac/pulls)
+[![HACS Validate](https://github.com/vmvelev/home-assistant-toshiba_ac/actions/workflows/validate.yml/badge.svg)](https://github.com/vmvelev/home-assistant-toshiba_ac/actions/workflows/validate.yml)
+[![hassfest Validate](https://github.com/vmvelev/home-assistant-toshiba_ac/actions/workflows/hassfest.yml/badge.svg)](https://github.com/vmvelev/home-assistant-toshiba_ac/actions/workflows/hassfest.yml)
+[![Github Release](https://img.shields.io/github/release/vmvelev/home-assistant-toshiba_ac.svg)](https://github.com/vmvelev/home-assistant-toshiba_ac/releases)
+[![Github Commit since](https://img.shields.io/github/commits-since/vmvelev/home-assistant-toshiba_ac/latest?sort=semver)](https://github.com/vmvelev/home-assistant-toshiba_ac/releases)
+[![Github Open Issues](https://img.shields.io/github/issues/vmvelev/home-assistant-toshiba_ac.svg)](https://github.com/vmvelev/home-assistant-toshiba_ac/issues)
+[![Github Open Pull Requests](https://img.shields.io/github/issues-pr/vmvelev/home-assistant-toshiba_ac.svg)](https://github.com/vmvelev/home-assistant-toshiba_ac/pulls)
 
 # Toshiba - Air conditioning
 
@@ -24,7 +24,7 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 ### or: Manual installation
 
-- Download [latest release](https://github.com/h4de5/home-assistant-toshiba_ac/releases)
+- Download [latest release](https://github.com/vmvelev/home-assistant-toshiba_ac/releases)
 - Create a folder: `custom_components` in your home-assistant config directory
 - Extract content (the folder `toshiba_ac`) of the release zip into the newly created directory
 - Reboot Home Assistant
@@ -71,12 +71,12 @@ logger:
 
 ### Reporting Issues
 
-- **Home Assistant integration issues**: [Open an issue here](https://github.com/h4de5/home-assistant-toshiba_ac/issues)
+- **Home Assistant integration issues**: [Open an issue here](https://github.com/vmvelev/home-assistant-toshiba_ac/issues)
 - **API/Device communication issues**: [Open an issue at the API repository](https://github.com/KaSroka/Toshiba-AC-control/issues)
 
 ## Compatible devices
 
-If your device is compatible with the [official Toshiba AC mobile app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) or [Toshiba Home AC Control](https://play.google.com/store/apps/details?id=com.toshibatctc.SmartAC) it has good chances to be supported by this integration. Furthermore it has been tested with the following hardware: [List of Supported Devices](https://github.com/h4de5/home-assistant-toshiba_ac/issues/45) - feel free to update that list!
+If your device is compatible with the [official Toshiba AC mobile app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) or [Toshiba Home AC Control](https://play.google.com/store/apps/details?id=com.toshibatctc.SmartAC) it has good chances to be supported by this integration. Furthermore it has been tested with the following hardware: [List of Supported Devices](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/45) - feel free to update that list!
 
 > **⚠️ North America Users:** Toshiba distributes their AC devices with a **completely different app and system** in the US: [Toshiba AC NA](https://play.google.com/store/apps/details?id=com.midea.toshiba&hl=de_AT). **This integration will NOT work with North American devices.** Instead, try [midea-ac-py](https://github.com/mill1000/midea-ac-py) which may be able to control NA-edition AC units without requiring an account.
 
@@ -84,6 +84,6 @@ If your device is compatible with the [official Toshiba AC mobile app](https://p
 ## More links and resources
 
 - Feature Request in the [home-assistant community](https://community.home-assistant.io/t/toshiba-home-ac-control/137698)
-- my first draft to communicate with the rest service using an [Toshiba API client in PHP](https://gist.github.com/h4de5/7f97db0f4efc265e48904d4a84dab4fb)
-- extended example to retrieve state of the AC unit and update the timeprogram using an [Toshiba API client in python](https://github.com/h4de5/home-assistant-toshiba_ac/tree/keep-http-api/custom_components/toshiba_ac/toshiba_ac_api)
+- my first draft to communicate with the rest service using an [Toshiba API client in PHP](https://gist.github.com/vmvelev/7f97db0f4efc265e48904d4a84dab4fb)
+- extended example to retrieve state of the AC unit and update the timeprogram using an [Toshiba API client in python](https://github.com/vmvelev/home-assistant-toshiba_ac/tree/keep-http-api/custom_components/toshiba_ac/toshiba_ac_api)
 - finally using AMQP interface to send state changes directly in [updated python package](https://github.com/KaSroka/Toshiba-AC-control)
