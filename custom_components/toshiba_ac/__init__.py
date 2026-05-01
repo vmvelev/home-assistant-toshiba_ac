@@ -70,9 +70,7 @@ class _ReconnectManager:
             )
             if new_sas_token and new_sas_token != self._entry.data.get("sas_token"):
                 new_data = {**self._entry.data, "sas_token": new_sas_token}
-                self._hass.config_entries.async_update_entry(
-                    self._entry, data=new_data
-                )
+                self._hass.config_entries.async_update_entry(self._entry, data=new_data)
             self.attach_disconnect_handler(dm)
             await asyncio.wait_for(dm.get_devices(), timeout=CONNECTION_TIMEOUT)
             _LOGGER.info("Successfully reconnected to Toshiba AC cloud")
