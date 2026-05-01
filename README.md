@@ -76,7 +76,7 @@ logger:
 
 ## Compatible devices
 
-If your device is compatible with the [official Toshiba AC mobile app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) or [Toshiba Home AC Control](https://play.google.com/store/apps/details?id=com.toshibatctc.SmartAC) it has good chances to be supported by this integration. Furthermore it has been tested with the following hardware: [List of Supported Devices](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/45) - feel free to update that list!
+If your device is compatible with the [official Toshiba AC mobile app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) or [Toshiba Home AC Control](https://play.google.com/store/apps/details?id=com.toshibatctc.SmartAC) it has good chances to be supported by this integration. The community maintains a list of confirmed hardware in the [Compatible Devices discussion](https://github.com/vmvelev/home-assistant-toshiba_ac/discussions/2) — feel free to add your device!
 
 > **⚠️ North America Users:** Toshiba distributes their AC devices with a **completely different app and system** in the US: [Toshiba AC NA](https://play.google.com/store/apps/details?id=com.midea.toshiba&hl=de_AT). **This integration will NOT work with North American devices.** Instead, try [midea-ac-py](https://github.com/mill1000/midea-ac-py) which may be able to control NA-edition AC units without requiring an account.
 
