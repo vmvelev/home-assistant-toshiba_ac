@@ -21,6 +21,101 @@ CONNECTION_TIMEOUT = 30
 RECONNECT_BACKOFF = [10, 60, 300]
 MAX_RECONNECT_ATTEMPTS = 3
 
+_AUTH_KEYWORDS = ("401", "unauthorize", "credential", "password")
+
+
+class _ReconnectManager:
+    """Manages automatic reconnection to the Toshiba AC cloud."""
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        """Store HA context and initialise counters."""
+        self._hass = hass
+        self._entry = entry
+        self.attempts = 0
+        self.cancel_retry = None
+        self.reloading = False
+
+    async def do_reconnect(self, now=None) -> None:
+        """Attempt a reconnect; reload the entry after too many failures."""
+        self.cancel_retry = None
+        if self.reloading:
+            return
+        dm = self._hass.data[DOMAIN].get(self._entry.entry_id)
+        if dm is None:
+            return
+        self.attempts += 1
+        if self.attempts > MAX_RECONNECT_ATTEMPTS:
+            _LOGGER.error(
+                "Failed to reconnect after %d attempts, reloading",
+                MAX_RECONNECT_ATTEMPTS,
+            )
+            self.reloading = True
+            self.attempts = 0
+            await self._hass.config_entries.async_reload(self._entry.entry_id)
+            return
+        _LOGGER.info(
+            "Reconnection attempt %d of %d", self.attempts, MAX_RECONNECT_ATTEMPTS
+        )
+        try:
+            try:
+                await asyncio.wait_for(dm.shutdown(), timeout=10)
+            except Exception as ex:
+                _LOGGER.debug("Shutdown before reconnect: %s", ex)
+            dm.sas_token = None
+            dm.http_api = None
+            dm.amqp_api = None
+            dm.devices = {}
+            new_sas_token = await asyncio.wait_for(
+                dm.connect(), timeout=CONNECTION_TIMEOUT
+            )
+            if new_sas_token and new_sas_token != self._entry.data.get("sas_token"):
+                new_data = {**self._entry.data, "sas_token": new_sas_token}
+                self._hass.config_entries.async_update_entry(
+                    self._entry, data=new_data
+                )
+            self.attach_disconnect_handler(dm)
+            await asyncio.wait_for(dm.get_devices(), timeout=CONNECTION_TIMEOUT)
+            _LOGGER.info("Successfully reconnected to Toshiba AC cloud")
+            self.attempts = 0
+        except asyncio.TimeoutError:
+            _LOGGER.warning("Reconnection attempt %d timed out", self.attempts)
+            self.schedule_retry()
+        except Exception as ex:
+            _LOGGER.warning("Reconnection attempt %d failed: %s", self.attempts, ex)
+            self.schedule_retry()
+
+    def schedule_retry(self) -> None:
+        """Schedule the next reconnect attempt with exponential backoff."""
+        if self.reloading or self.cancel_retry is not None:
+            return
+        delay = RECONNECT_BACKOFF[min(self.attempts, len(RECONNECT_BACKOFF) - 1)]
+        _LOGGER.info("Scheduling reconnect in %d seconds", delay)
+        self.cancel_retry = async_call_later(self._hass, delay, self.do_reconnect)
+
+    def on_disconnect(self) -> None:
+        """Handle an IoT Hub disconnect event from a background thread."""
+        _LOGGER.warning("Azure IoT Hub connection lost -- scheduling reconnect")
+        if self.cancel_retry is not None or self.reloading:
+            return
+        self._hass.loop.call_soon_threadsafe(self.schedule_retry)
+
+    def attach_disconnect_handler(self, dm) -> None:
+        """Wire up the disconnect callback; on_connection_state_change takes no args."""
+        if not (dm.amqp_api and dm.amqp_api.device):
+            return
+
+        def _on_state_change() -> None:
+            if not dm.amqp_api.device.connected:
+                self.on_disconnect()
+
+        dm.amqp_api.device.on_connection_state_change = _on_state_change
+
+    def cancel(self) -> None:
+        """Stop reconnection activity when the entry is being unloaded."""
+        self.reloading = True
+        if self.cancel_retry:
+            self.cancel_retry()
+
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Toshiba AC component."""
@@ -38,78 +133,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data["device_id"],
         sas_token=None,
     )
-
-    reconnect_state = {
-        "attempts": 0,
-        "cancel_retry": None,
-        "reloading": False,
-    }
-
-    async def _do_reconnect(now=None) -> None:
-        """Actually attempt a reconnect."""
-        reconnect_state["cancel_retry"] = None
-        if reconnect_state["reloading"]:
-            return
-        dm = hass.data[DOMAIN].get(entry.entry_id)
-        if dm is None:
-            return
-        attempt = reconnect_state["attempts"] + 1
-        reconnect_state["attempts"] = attempt
-        if attempt > MAX_RECONNECT_ATTEMPTS:
-            _LOGGER.error("Failed to reconnect after %d attempts, reloading", MAX_RECONNECT_ATTEMPTS)
-            reconnect_state["reloading"] = True
-            reconnect_state["attempts"] = 0
-            await hass.config_entries.async_reload(entry.entry_id)
-            return
-        _LOGGER.info("Reconnection attempt %d of %d", attempt, MAX_RECONNECT_ATTEMPTS)
-        try:
-            try:
-                await asyncio.wait_for(dm.shutdown(), timeout=10)
-            except Exception as ex:
-                _LOGGER.debug("Shutdown before reconnect: %s", ex)
-            dm.sas_token = None
-            dm.http_api = None
-            dm.amqp_api = None
-            dm.devices = {}
-            new_sas_token = await asyncio.wait_for(dm.connect(), timeout=CONNECTION_TIMEOUT)
-            if new_sas_token and new_sas_token != entry.data.get("sas_token"):
-                new_data = {**entry.data, "sas_token": new_sas_token}
-                hass.config_entries.async_update_entry(entry, data=new_data)
-            _attach_disconnect_handler(dm)
-            await asyncio.wait_for(dm.get_devices(), timeout=CONNECTION_TIMEOUT)
-            _LOGGER.info("Successfully reconnected to Toshiba AC cloud")
-            reconnect_state["attempts"] = 0
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Reconnection attempt %d timed out", attempt)
-            _schedule_retry()
-        except Exception as ex:
-            _LOGGER.warning("Reconnection attempt %d failed: %s", attempt, ex)
-            _schedule_retry()
-
-    def _schedule_retry() -> None:
-        if reconnect_state["reloading"] or reconnect_state["cancel_retry"] is not None:
-            return
-        attempt = reconnect_state["attempts"]
-        delay = RECONNECT_BACKOFF[min(attempt, len(RECONNECT_BACKOFF) - 1)]
-        _LOGGER.info("Scheduling reconnect in %d seconds", delay)
-        reconnect_state["cancel_retry"] = async_call_later(hass, delay, _do_reconnect)
-
-    def _on_disconnect_in_thread() -> None:
-        _LOGGER.warning("Azure IoT Hub connection lost -- scheduling reconnect")
-        if reconnect_state["cancel_retry"] is not None or reconnect_state["reloading"]:
-            return
-        hass.loop.call_soon_threadsafe(_schedule_retry)
-
-    def _attach_disconnect_handler(dm) -> None:
-        """Wire up disconnect callback. on_connection_state_change takes NO args."""
-        if dm.amqp_api and dm.amqp_api.device:
-            def _on_state_change() -> None:
-                if not dm.amqp_api.device.connected:
-                    _on_disconnect_in_thread()
-            dm.amqp_api.device.on_connection_state_change = _on_state_change
+    reconnect_mgr = _ReconnectManager(hass, entry)
 
     try:
-        new_sas_token = await asyncio.wait_for(device_manager.connect(), timeout=CONNECTION_TIMEOUT)
+        new_sas_token = await asyncio.wait_for(
+            device_manager.connect(), timeout=CONNECTION_TIMEOUT
+        )
         if new_sas_token and new_sas_token != entry.data.get("sas_token"):
             _LOGGER.info("SAS token updated during connection")
             new_data = {**entry.data, "sas_token": new_sas_token}
@@ -119,21 +148,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await device_manager.shutdown()
         except Exception:
             pass
-        raise ConfigEntryNotReady(f"Connection timed out after {CONNECTION_TIMEOUT}s. Will retry.")
+        raise ConfigEntryNotReady(
+            f"Connection timed out after {CONNECTION_TIMEOUT}s. Will retry."
+        )
     except Exception as ex:
         error_str = str(ex).lower()
-        if any(k in error_str for k in ("401", "unauthorize", "credential", "password")):
+        if any(k in error_str for k in _AUTH_KEYWORDS):
             raise ConfigEntryAuthFailed(f"Authentication failed: {ex}.") from ex
-        raise ConfigEntryNotReady(f"Failed to connect to Toshiba AC service: {ex}") from ex
+        raise ConfigEntryNotReady(
+            f"Failed to connect to Toshiba AC service: {ex}"
+        ) from ex
 
     async def sas_token_updated(new_token: str) -> None:
         new_data = {**entry.data, "sas_token": new_token}
         hass.config_entries.async_update_entry(entry, data=new_data)
 
     device_manager.on_sas_token_updated_callback.add(sas_token_updated)
-    _attach_disconnect_handler(device_manager)
+    reconnect_mgr.attach_disconnect_handler(device_manager)
     hass.data[DOMAIN][entry.entry_id] = device_manager
-    hass.data[DOMAIN][f"{entry.entry_id}_reconnect"] = reconnect_state
+    hass.data[DOMAIN][f"{entry.entry_id}_reconnect"] = reconnect_mgr
     await _async_register_services(hass)
 
     # Pre-fetch devices before forwarding to platforms.
@@ -147,7 +180,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await device_manager.shutdown()
         except Exception:
             pass
-        raise ConfigEntryNotReady(f"Timed out fetching devices after {CONNECTION_TIMEOUT}s.")
+        raise ConfigEntryNotReady(
+            f"Timed out fetching devices after {CONNECTION_TIMEOUT}s."
+        )
     except Exception as ex:
         try:
             await device_manager.shutdown()
@@ -171,13 +206,13 @@ async def _async_register_services(hass: HomeAssistant) -> None:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
     _LOGGER.info("Unloading Toshiba AC integration")
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        reconnect_state = hass.data[DOMAIN].pop(f"{entry.entry_id}_reconnect", {})
-        reconnect_state["reloading"] = True
-        if reconnect_state.get("cancel_retry"):
-            reconnect_state["cancel_retry"]()
+        reconnect_mgr = hass.data[DOMAIN].pop(f"{entry.entry_id}_reconnect", None)
+        if reconnect_mgr:
+            reconnect_mgr.cancel()
         device_manager = hass.data[DOMAIN].pop(entry.entry_id)
         try:
             await asyncio.wait_for(device_manager.shutdown(), timeout=10)
