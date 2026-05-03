@@ -17,9 +17,16 @@ PLATFORMS = ["climate", "select", "sensor", "switch"]
 
 _LOGGER = logging.getLogger(__name__)
 
+# The Azure IoT SDK logs WARNING-level noise for every connection drop/retry
+# via its internal handle_exceptions logger. Raise it to ERROR so only genuine
+# unrecoverable SDK errors appear in HA logs.
+logging.getLogger("azure.iot.device").setLevel(logging.ERROR)
+
 CONNECTION_TIMEOUT = 30
-RECONNECT_BACKOFF = [10, 60, 300]
-MAX_RECONNECT_ATTEMPTS = 3
+# How long to wait for the SDK to self-heal before forcing a reload.
+# The Azure IoT SDK reconnects within ~1s on normal SAS token refresh;
+# this delay must be long enough that we don't reload a self-healing connection.
+_RELOAD_DELAY = 30
 
 _AUTH_KEYWORDS = ("401", "unauthorize", "credential", "password")
 
@@ -28,85 +35,67 @@ class _ReconnectManager:
     """Manages automatic reconnection to the Toshiba AC cloud."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        """Store HA context and initialise counters."""
+        """Store HA context and initialise state."""
         self._hass = hass
         self._entry = entry
-        self.attempts = 0
         self.cancel_retry = None
         self.reloading = False
 
-    async def do_reconnect(self, now=None) -> None:
-        """Attempt a reconnect; reload the entry after too many failures."""
+    async def do_reload(self, _now=None) -> None:
+        """Reload the config entry to establish a fresh connection."""
         self.cancel_retry = None
         if self.reloading:
             return
-        dm = self._hass.data[DOMAIN].get(self._entry.entry_id)
-        if dm is None:
-            return
-        self.attempts += 1
-        if self.attempts > MAX_RECONNECT_ATTEMPTS:
-            _LOGGER.error(
-                "Failed to reconnect after %d attempts, reloading",
-                MAX_RECONNECT_ATTEMPTS,
-            )
-            self.reloading = True
-            self.attempts = 0
-            await self._hass.config_entries.async_reload(self._entry.entry_id)
-            return
-        _LOGGER.info(
-            "Reconnection attempt %d of %d", self.attempts, MAX_RECONNECT_ATTEMPTS
-        )
-        try:
-            try:
-                await asyncio.wait_for(dm.shutdown(), timeout=10)
-            except Exception as ex:
-                _LOGGER.debug("Shutdown before reconnect: %s", ex)
-            dm.sas_token = None
-            dm.http_api = None
-            dm.amqp_api = None
-            dm.devices = {}
-            new_sas_token = await asyncio.wait_for(
-                dm.connect(), timeout=CONNECTION_TIMEOUT
-            )
-            if new_sas_token and new_sas_token != self._entry.data.get("sas_token"):
-                new_data = {**self._entry.data, "sas_token": new_sas_token}
-                self._hass.config_entries.async_update_entry(self._entry, data=new_data)
-            self.attach_disconnect_handler(dm)
-            await asyncio.wait_for(dm.get_devices(), timeout=CONNECTION_TIMEOUT)
-            _LOGGER.info("Successfully reconnected to Toshiba AC cloud")
-            self.attempts = 0
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Reconnection attempt %d timed out", self.attempts)
-            self.schedule_retry()
-        except Exception as ex:
-            _LOGGER.warning("Reconnection attempt %d failed: %s", self.attempts, ex)
-            self.schedule_retry()
+        self.reloading = True
+        _LOGGER.info("Reloading Toshiba AC integration to restore connection")
+        await self._hass.config_entries.async_reload(self._entry.entry_id)
 
-    def schedule_retry(self) -> None:
-        """Schedule the next reconnect attempt with exponential backoff."""
-        if self.reloading or self.cancel_retry is not None:
+    def _schedule_reload(self) -> None:
+        """Schedule a reload; must be called on the HA event loop."""
+        if self.cancel_retry is not None or self.reloading:
             return
-        delay = RECONNECT_BACKOFF[min(self.attempts, len(RECONNECT_BACKOFF) - 1)]
-        _LOGGER.info("Scheduling reconnect in %d seconds", delay)
-        self.cancel_retry = async_call_later(self._hass, delay, self.do_reconnect)
+        _LOGGER.warning(
+            "Azure IoT Hub disconnected -- reloading in %ds if SDK does not recover",
+            _RELOAD_DELAY,
+        )
+        self.cancel_retry = async_call_later(self._hass, _RELOAD_DELAY, self.do_reload)
 
     def on_disconnect(self) -> None:
         """Handle an IoT Hub disconnect event from a background thread."""
-        _LOGGER.warning("Azure IoT Hub connection lost -- scheduling reconnect")
         if self.cancel_retry is not None or self.reloading:
             return
-        self._hass.loop.call_soon_threadsafe(self.schedule_retry)
+        self._hass.loop.call_soon_threadsafe(self._schedule_reload)
+
+    def on_sdk_reconnected(self, dm) -> None:
+        """Cancel any pending reload and re-wire the handler on the new device object.
+
+        Call this when the SDK reconnects on its own (signalled by SAS token update).
+        """
+        if self.cancel_retry is not None:
+            _LOGGER.info("SDK reconnected -- cancelling scheduled reload")
+            self.cancel_retry()
+            self.cancel_retry = None
+        self.attach_disconnect_handler(dm)
 
     def attach_disconnect_handler(self, dm) -> None:
-        """Wire up the disconnect callback; on_connection_state_change takes no args."""
+        """Wire up the disconnect callback on the current amqp_api.device.
+
+        Captures the specific device object so stale callbacks from old objects
+        (replaced by the SDK during its internal reconnect) are ignored.
+        """
         if not (dm.amqp_api and dm.amqp_api.device):
             return
 
+        device = dm.amqp_api.device
+
         def _on_state_change() -> None:
-            if not dm.amqp_api.device.connected:
+            # If dm has moved to a newer device object this callback is stale.
+            if not (dm.amqp_api and dm.amqp_api.device is device):
+                return
+            if not device.connected:
                 self.on_disconnect()
 
-        dm.amqp_api.device.on_connection_state_change = _on_state_change
+        device.on_connection_state_change = _on_state_change
 
     def cancel(self) -> None:
         """Stop reconnection activity when the entry is being unloaded."""
@@ -160,6 +149,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def sas_token_updated(new_token: str) -> None:
         new_data = {**entry.data, "sas_token": new_token}
         hass.config_entries.async_update_entry(entry, data=new_data)
+        # SAS token update means the SDK successfully reconnected on its own.
+        # Cancel any pending reload and re-wire the handler on the new device object.
+        reconnect_mgr.on_sdk_reconnected(device_manager)
 
     device_manager.on_sas_token_updated_callback.add(sas_token_updated)
     reconnect_mgr.attach_disconnect_handler(device_manager)
