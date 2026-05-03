@@ -34,15 +34,17 @@ class _ReconnectManager:
         self.attempts = 0
         self.cancel_retry = None
         self.reloading = False
+        self._reconnecting = False
 
     async def do_reconnect(self, now=None) -> None:
         """Attempt a reconnect; reload the entry after too many failures."""
         self.cancel_retry = None
-        if self.reloading:
+        if self.reloading or self._reconnecting:
             return
         dm = self._hass.data[DOMAIN].get(self._entry.entry_id)
         if dm is None:
             return
+        self._reconnecting = True
         self.attempts += 1
         if self.attempts > MAX_RECONNECT_ATTEMPTS:
             _LOGGER.error(
@@ -51,12 +53,17 @@ class _ReconnectManager:
             )
             self.reloading = True
             self.attempts = 0
+            self._reconnecting = False
             await self._hass.config_entries.async_reload(self._entry.entry_id)
             return
         _LOGGER.info(
             "Reconnection attempt %d of %d", self.attempts, MAX_RECONNECT_ATTEMPTS
         )
         try:
+            # Clear the old callback before shutdown so stale background threads
+            # on the old connection cannot trigger further disconnect events.
+            if dm.amqp_api and dm.amqp_api.device:
+                dm.amqp_api.device.on_connection_state_change = None
             try:
                 await asyncio.wait_for(dm.shutdown(), timeout=10)
             except Exception as ex:
@@ -81,10 +88,12 @@ class _ReconnectManager:
         except Exception as ex:
             _LOGGER.warning("Reconnection attempt %d failed: %s", self.attempts, ex)
             self.schedule_retry()
+        finally:
+            self._reconnecting = False
 
     def schedule_retry(self) -> None:
         """Schedule the next reconnect attempt with exponential backoff."""
-        if self.reloading or self.cancel_retry is not None:
+        if self.reloading or self._reconnecting or self.cancel_retry is not None:
             return
         delay = RECONNECT_BACKOFF[min(self.attempts, len(RECONNECT_BACKOFF) - 1)]
         _LOGGER.info("Scheduling reconnect in %d seconds", delay)
@@ -92,9 +101,9 @@ class _ReconnectManager:
 
     def on_disconnect(self) -> None:
         """Handle an IoT Hub disconnect event from a background thread."""
-        _LOGGER.warning("Azure IoT Hub connection lost -- scheduling reconnect")
-        if self.cancel_retry is not None or self.reloading:
+        if self.cancel_retry is not None or self.reloading or self._reconnecting:
             return
+        _LOGGER.warning("Azure IoT Hub connection lost -- scheduling reconnect")
         self._hass.loop.call_soon_threadsafe(self.schedule_retry)
 
     def attach_disconnect_handler(self, dm) -> None:
