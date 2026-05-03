@@ -132,3 +132,5 @@ dmypy.json
 logos/@eaDir/
 logos/Thumbs.db
 *.bac
+
+.claude/
