@@ -17,6 +17,11 @@ PLATFORMS = ["climate", "select", "sensor", "switch"]
 
 _LOGGER = logging.getLogger(__name__)
 
+# The Azure IoT SDK logs WARNING-level noise for every connection drop/retry
+# via its internal handle_exceptions logger. Raise it to ERROR so only genuine
+# unrecoverable SDK errors appear in HA logs.
+logging.getLogger("azure.iot.device").setLevel(logging.ERROR)
+
 CONNECTION_TIMEOUT = 30
 RECONNECT_BACKOFF = [10, 60, 300]
 MAX_RECONNECT_ATTEMPTS = 3
