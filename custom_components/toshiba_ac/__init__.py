@@ -67,10 +67,9 @@ class _ReconnectManager:
         self._hass.loop.call_soon_threadsafe(self._schedule_reload)
 
     def on_sdk_reconnected(self, dm) -> None:
-        """Called when the SDK reconnects on its own (signalled by SAS token update).
+        """Cancel any pending reload and re-wire the handler on the new device object.
 
-        Cancels any pending reload and re-wires the disconnect handler on the
-        new device object that the SDK created during its internal reconnect.
+        Call this when the SDK reconnects on its own (signalled by SAS token update).
         """
         if self.cancel_retry is not None:
             _LOGGER.info("SDK reconnected -- cancelling scheduled reload")
