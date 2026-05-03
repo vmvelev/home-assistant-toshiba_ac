@@ -47,18 +47,20 @@ class ToshibaPowerSensor(ToshibaAcEntity, SensorEntity):
 
     _attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
     _attr_device_class = SensorDeviceClass.ENERGY
-    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_state_class = SensorStateClass.TOTAL
     _ac_energy_consumption: ToshibaAcDeviceEnergyConsumption | None = None
 
     def __init__(self, toshiba_device: ToshibaAcDevice):
         """Initialize the sensor."""
         super().__init__(toshiba_device)
         self._attr_unique_id = f"{self._device.ac_unique_id}_sensor"
-        self._attr_name = f"{self._device.name} Power Consumption"
+        self._attr_name = f"{self._device.name} Energy Consumption"
 
     async def state_changed(self, _dev: ToshibaAcDevice):
         """Call if we need to change the ha state."""
         self._ac_energy_consumption = self._device.ac_energy_consumption
+        if self._ac_energy_consumption:
+            self._attr_last_reset = self._ac_energy_consumption.since
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):
@@ -84,13 +86,6 @@ class ToshibaPowerSensor(ToshibaAcEntity, SensorEntity):
         if self._ac_energy_consumption:
             return self._ac_energy_consumption.energy_wh
         return None
-
-    @property
-    def extra_state_attributes(self):
-        """Return the state attributes."""
-        if self._ac_energy_consumption:
-            return {"last_reset": self._ac_energy_consumption.since}
-        return {}
 
 
 class ToshibaTempSensor(ToshibaAcStateEntity, SensorEntity):
