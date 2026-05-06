@@ -17,10 +17,14 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 ### Installation with HACS
 
-- In HACS go to integrations and search for 'Toshiba AC'
-- Click `Install`
-- Reboot Home Assistant
-- Follow common integration manual
+> **Note:** This fork is not yet in the default HACS catalog. You need to add it as a custom repository first.
+
+1. In HACS, click the three-dot menu (⋮) in the top-right corner and select **Custom repositories**
+2. Enter the repository URL: `https://github.com/vmvelev/home-assistant-toshiba_ac`
+3. Select **Integration** as the category and click **Add**
+4. Search for **Toshiba AC** in HACS integrations and click **Install**
+5. Reboot Home Assistant
+6. Follow the common integration manual below
 
 ### or: Manual installation
 
