@@ -1,6 +1,6 @@
 {
   "domain": "toshiba_ac",
-  "name": "Toshiba AC",
+  "name": "Toshiba AC (Community)",
   "codeowners": ["@vmvelev"],
   "config_flow": true,
   "dependencies": [],
@@ -14,6 +14,6 @@
     "janus==1.0.0"
   ],
   "ssdp": [],
-  "version": "2026.5.4",
+  "version": "2026.5.5",
   "zeroconf": []
 }

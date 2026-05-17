@@ -1,5 +1,5 @@
 {
-  "name": "Toshiba AC",
+  "name": "Toshiba AC (Community)",
   "content_in_root": false,
   "render_readme": true,
   "homeassistant": "2025.3.0"

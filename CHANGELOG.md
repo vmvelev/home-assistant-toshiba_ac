@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.5.5] - 2026-05-17
+
+### Changed
+
+- **HACS / UI name**: Renamed to **Toshiba AC (Community)** in `hacs.json` and `manifest.json` so it can coexist in HACS alongside [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) (**Toshiba AC**) without replacing the original listing.
+
 ## [2026.5.4] - 2026-05-17
 
 ### Fixed
