@@ -34,15 +34,15 @@ These are **HA-layer** changes; see the [changelog](https://github.com/vmvelev/h
 - **Short startup delay** - reduces simultaneous API calls when many integrations start at once
 - **Event-driven reconnect** - detects Azure IoT Hub disconnects and reloads the integration only if the SDK does not recover on its own (typically within 30 seconds)
 
-Current releases use **`toshiba-ac` 0.3.13** (HTTP/API stability in the library) plus the items above. Use **2026.5.4** or later (fixes dependency install order on Home Assistant 2026.5+).
+Current releases use **`toshiba-ac` 0.3.13** (HTTP/API stability in the library) plus the items above. Use **2026.5.5** or later.
 
 ### Which repository should I use?
 
 | Your situation | Suggestion |
 |----------------|------------|
-| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **This fork** (install via HACS custom repository below) |
-| You prefer the original repo name and upstream is responding to issues | [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) |
-| Not sure | Pick one, note the **integration version** in bug reports (for example `2026.5.3`), and check whether the [official Toshiba app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) works |
+| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **Toshiba AC (Community)** — this fork (HACS default or custom repository below) |
+| You prefer the original integration and upstream is responding to issues | **Toshiba AC** — [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) in HACS |
+| Not sure | Pick one, note the **integration version** in bug reports (for example `2026.5.5`), and check whether the [official Toshiba app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) works |
 
 ### Upstream and maintenance
 
@@ -58,14 +58,22 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 ### Installation with HACS
 
-> **Note:** This fork is not yet in the default HACS catalog. You need to add it as a custom repository first.
+Two HACS entries exist for the same Toshiba cloud devices (same `toshiba_ac` domain — install **one only**):
 
-1. In HACS, click the three-dot menu (⋮) in the top-right corner and select **Custom repositories**
-2. Enter the repository URL: `https://github.com/vmvelev/home-assistant-toshiba_ac`
-3. Select **Integration** as the category and click **Add**
-4. Search for **Toshiba AC** in HACS integrations and click **Install**
-5. Reboot Home Assistant
-6. Follow the common integration manual below
+| HACS name | Repository | When to use |
+|-----------|------------|-------------|
+| **Toshiba AC** | [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) | Original integration |
+| **Toshiba AC (Community)** | [vmvelev/home-assistant-toshiba_ac](https://github.com/vmvelev/home-assistant-toshiba_ac) | This fork (startup/reconnect fixes) |
+
+**From the default HACS catalog:** search **Toshiba AC (Community)** and install.
+
+**Or as a custom repository** (if the default listing is not available yet):
+
+1. HACS → Integrations → ⋯ → **Custom repositories**
+2. Add `https://github.com/vmvelev/home-assistant-toshiba_ac` (category: **Integration**)
+3. Search **Toshiba AC (Community)** → Install
+4. Restart Home Assistant
+5. Follow the common integration manual below
 
 ### or: Manual installation
 
