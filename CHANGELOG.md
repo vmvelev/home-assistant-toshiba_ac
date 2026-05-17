@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.5.4] - 2026-05-17
+
+### Fixed
+
+- **Dependency install failure on HA 2026.5+**: Reordered `manifest.json` requirements so `azure-iot-device==2.15.0rc1` installs before `toshiba-ac==0.3.13`. Home Assistant installs requirements in list order; with `toshiba-ac` first, `uv` refused the pre-release transitive dependency and setup failed (`Requirements for toshiba_ac not found`).
+
 ## [2026.5.3] - 2026-05-17
+
+> **Note:** If setup fails after upgrading to 2026.5.3, upgrade to **2026.5.4** or later.
 
 ### Changed
 

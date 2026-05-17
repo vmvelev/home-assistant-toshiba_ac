@@ -34,7 +34,7 @@ These are **HA-layer** changes; see the [changelog](https://github.com/vmvelev/h
 - **Short startup delay** - reduces simultaneous API calls when many integrations start at once
 - **Event-driven reconnect** - detects Azure IoT Hub disconnects and reloads the integration only if the SDK does not recover on its own (typically within 30 seconds)
 
-Current releases use **`toshiba-ac` 0.3.13** (HTTP/API stability in the library) plus the items above.
+Current releases use **`toshiba-ac` 0.3.13** (HTTP/API stability in the library) plus the items above. Use **2026.5.4** or later (fixes dependency install order on Home Assistant 2026.5+).
 
 ### Which repository should I use?
 
