@@ -9,6 +9,47 @@
 
 Toshiba AC integration into home-assistant.io
 
+## About this fork
+
+This project is a maintained fork of [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac), the original Home Assistant integration for Toshiba AC. Full credit to @h4de5 and all upstream contributors for the base integration.
+
+When upstream activity slowed, this fork was created to keep a **working, stable** integration for the community. Upstream has since become active again (for example with `toshiba-ac` 0.3.13 in their `2026.5.1` release). Both projects now share the same underlying library version; the difference is mainly in **Home Assistant integration behaviour**.
+
+### Two layers
+
+| Layer | Repository | What it does |
+|-------|------------|--------------|
+| **Protocol library** | [KaSroka/Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control) (`toshiba-ac` on PyPI) | HTTP login, device list, AMQP/MQTT push updates |
+| **HA integration** | This fork, or [h4de5's repo](https://github.com/h4de5/home-assistant-toshiba_ac) | Config flow, entities, startup, reconnect, how HA talks to the library |
+
+Library fixes (HTTP pacing, 403 retries, and similar) belong in **Toshiba-AC-control** and are tracked in both integrations when the dependency is bumped. This fork adds extra logic in `custom_components/toshiba_ac` for problems that showed up in Home Assistant specifically.
+
+### What this fork adds (on top of upstream)
+
+These are **HA-layer** changes; see the [changelog](https://github.com/vmvelev/home-assistant-toshiba_ac/blob/main/CHANGELOG.md) and [releases](https://github.com/vmvelev/home-assistant-toshiba_ac/releases) for version history.
+
+- **Fresh SAS token on every HA startup** - avoids `Credentials invalid` after a restart when a stored token has expired
+- **Device list pre-fetched before platforms load** - avoids the 60-second platform setup timeout when climate, sensor, and other platforms each tried to fetch devices separately
+- **Startup rate-limit (403) handling** - transient WAF/rate-limit responses at boot are retried by Home Assistant instead of prompting reconfiguration
+- **Short startup delay** - reduces simultaneous API calls when many integrations start at once
+- **Event-driven reconnect** - detects Azure IoT Hub disconnects and reloads the integration only if the SDK does not recover on its own (typically within 30 seconds)
+
+Current releases use **`toshiba-ac` 0.3.13** (HTTP/API stability in the library) plus the items above.
+
+### Which repository should I use?
+
+| Your situation | Suggestion |
+|----------------|------------|
+| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **This fork** (install via HACS custom repository below) |
+| You prefer the original repo name and upstream is responding to issues | [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) |
+| Not sure | Pick one, note the **integration version** in bug reports (for example `2026.5.3`), and check whether the [official Toshiba app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) works |
+
+### Upstream and maintenance
+
+I track upstream releases and merge shared changes (such as dependency bumps). If @h4de5 wants to merge the HA-layer fixes back or align maintenance, that is welcome - the goal is one healthy integration for users, not two competing codebases.
+
+For discussion about this fork on the original repo, see [h4de5#285](https://github.com/h4de5/home-assistant-toshiba_ac/issues/285).
+
 ## Requirements
 
 You need a supported (or compatible) Toshiba AC device with either a built-in Wifi module or an adapter. See [list of compatible devices](#compatible-devices)
