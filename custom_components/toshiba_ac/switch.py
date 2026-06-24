@@ -140,6 +140,11 @@ _SWITCH_DESCRIPTIONS: Sequence[ToshibaAcSwitchDescription] = [
     ),
 ]
 
+# COMFORT and SLEEP_CARE are not reported in device.supported on all devices
+# even though they work via the Toshiba app. Force-create these switches
+# regardless of the is_supported() check.
+_FORCED_SWITCH_KEYS = {"comfort_mode", "sleep_care_mode"}
+
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add switch entities for passed config_entry in HA."""
@@ -149,7 +154,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     devices: list[ToshibaAcDevice] = await device_manager.get_devices()
     for device in devices:
         for entity_description in _SWITCH_DESCRIPTIONS:
-            if entity_description.is_supported(device.supported):
+            if entity_description.key in _FORCED_SWITCH_KEYS or entity_description.is_supported(device.supported):
                 new_entities.append(ToshibaAcSwitchEntity(device, entity_description))
             else:
                 _LOGGER.debug(
