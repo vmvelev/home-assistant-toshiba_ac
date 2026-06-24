@@ -70,9 +70,9 @@ def _toshiba_patch_hada() -> None:
         ToshibaAcSwingMode._value2member_map_[_new._value_] = _new
         ToshibaAcSwingMode._member_map_["HADA"] = _new
         ToshibaAcSwingMode._member_names_.append("HADA")
-        ToshibaAcSwingMode.HADA = _new
+        # ToshibaAcSwingMode.HADA = _new  # Python 3.14: EnumType.__setattr__ raises AttributeError
 
-    hada = ToshibaAcSwingMode.HADA
+    hada = ToshibaAcSwingMode._member_map_["HADA"]
 
     # Step 2 — patch AcSwingMode.from_raw / to_raw.
     # Runs AFTER _toshiba_patch_from_raw so we wrap the safe fallback version.
