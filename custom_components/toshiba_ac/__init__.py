@@ -4,6 +4,110 @@ from __future__ import annotations
 import asyncio
 import logging
 
+
+def _toshiba_patch_from_raw() -> None:
+    """Make all ToshibaAcFcuState.*.from_raw calls safe against unknown raw values.
+
+    Without this, receiving an unrecognised byte (e.g. 0x60 for H.DA before the
+    HADA patch runs) raises KeyError and crashes the state-update callback.
+    """
+    from toshiba_ac.device.fcu_state import ToshibaAcFcuState
+
+    none_val = ToshibaAcFcuState.NONE_VAL
+    patched: list[str] = []
+
+    for name in dir(ToshibaAcFcuState):
+        if name.startswith("_"):
+            continue
+        cls = getattr(ToshibaAcFcuState, name, None)
+        if not isinstance(cls, type) or not hasattr(cls, "from_raw"):
+            continue
+
+        original = cls.from_raw
+        try:
+            default = original(none_val)
+        except Exception:
+            continue
+
+        def _make_safe(orig, default_val):
+            def safe_from_raw(raw):
+                try:
+                    return orig(raw)
+                except (KeyError, ValueError):
+                    return default_val
+            return safe_from_raw
+
+        cls.from_raw = staticmethod(_make_safe(original, default))
+        patched.append(name)
+
+    logging.getLogger(__name__).info(
+        "toshiba_ac safe-from_raw applied to: %s", ", ".join(patched) or "(none)"
+    )
+
+
+def _toshiba_patch_hada() -> None:
+    """Add H.DA airflow mode (raw 0x60) to the ToshibaAcSwingMode enum and
+    patch AcSwingMode.from_raw / to_raw for bidirectional encoding.
+
+    Devices with FIXED_1-5 swing support (merit_bits[14]=True, model_id=3)
+    expose H.DA as a separate airflow direction mode with raw value 0x60.
+    The swing_modes list in the climate entity is extended in climate.py
+    (check for 'Fixed 1' presence → add 'Hada').
+
+    Reference: github.com/KaSroka/Toshiba-AC-control/issues/69
+    """
+    # Step 1 — extend ToshibaAcSwingMode with HADA.
+    # CRITICAL: must use toshiba_ac.device.properties, NOT toshiba_ac.utils.properties —
+    # they are different class objects even though they share the same name.
+    from toshiba_ac.device.properties import ToshibaAcSwingMode
+
+    if "HADA" not in ToshibaAcSwingMode._member_names_:
+        _new = object.__new__(ToshibaAcSwingMode)
+        # CRITICAL: ToshibaAcSwingMode.NONE has value=None (not int), filter before max().
+        _int_vals = [m.value for m in ToshibaAcSwingMode if isinstance(m.value, int)]
+        _new._value_ = (max(_int_vals) + 1) if _int_vals else 100
+        _new._name_ = "HADA"
+        ToshibaAcSwingMode._value2member_map_[_new._value_] = _new
+        ToshibaAcSwingMode._member_map_["HADA"] = _new
+        ToshibaAcSwingMode._member_names_.append("HADA")
+        # ToshibaAcSwingMode.HADA = _new  # Python 3.14: EnumType.__setattr__ raises AttributeError
+
+    hada = ToshibaAcSwingMode._member_map_["HADA"]
+
+    # Step 2 — patch AcSwingMode.from_raw / to_raw.
+    # Runs AFTER _toshiba_patch_from_raw so we wrap the safe fallback version.
+    from toshiba_ac.device.fcu_state import ToshibaAcFcuState
+
+    _safe_from = ToshibaAcFcuState.AcSwingMode.from_raw
+    _safe_to = ToshibaAcFcuState.AcSwingMode.to_raw
+
+    def _from_raw_hada(raw: int) -> ToshibaAcSwingMode:
+        return hada if raw == 0x60 else _safe_from(raw)
+
+    def _to_raw_hada(val: ToshibaAcSwingMode) -> int:
+        return 0x60 if val is hada else _safe_to(val)
+
+    ToshibaAcFcuState.AcSwingMode.from_raw = staticmethod(_from_raw_hada)
+    ToshibaAcFcuState.AcSwingMode.to_raw = staticmethod(_to_raw_hada)
+
+    logging.getLogger(__name__).info("toshiba_ac HADA (0x60) patch applied")
+
+
+try:
+    _toshiba_patch_from_raw()
+except Exception:
+    logging.getLogger(__name__).exception(
+        "Could not apply toshiba_ac safe from_raw patch"
+    )
+
+try:
+    _toshiba_patch_hada()
+except Exception:
+    logging.getLogger(__name__).exception(
+        "Could not apply toshiba_ac HADA patch"
+    )
+
+
 from toshiba_ac.device_manager import ToshibaAcDeviceManager
 
 from homeassistant.config_entries import ConfigEntry

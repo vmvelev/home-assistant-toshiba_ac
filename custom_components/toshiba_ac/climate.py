@@ -57,7 +57,6 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
     """Provides a Toshiba climates."""
 
-    # This is the main entity for the device
     _attr_has_entity_name = True
     _attr_name = None
 
@@ -80,6 +79,18 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         self._attr_unique_id = f"{self._device.ac_unique_id}_climate"
         self._attr_fan_modes = get_feature_list(self._device.supported.ac_fan_mode)
         self._attr_swing_modes = get_feature_list(self._device.supported.ac_swing_mode)
+        if "Fixed 1" in self._attr_swing_modes and "Hada" not in self._attr_swing_modes:
+            self._attr_swing_modes = list(self._attr_swing_modes) + ["Hada"]
+            # Inject HADA into device.supported so set_ac_swing_mode doesn't reject it
+            hada = ToshibaAcSwingMode._member_map_.get("HADA")
+            if hada is not None and hada not in self._device.supported.ac_swing_mode:
+                sup = self._device.supported.ac_swing_mode
+                if hasattr(sup, "add"):
+                    sup.add(hada)
+                elif hasattr(sup, "append"):
+                    sup.append(hada)
+                else:
+                    self._device.supported.ac_swing_mode = type(sup)(list(sup) + [hada])
 
     @property
     def is_on(self):
@@ -90,49 +101,37 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         """Set new target temperature."""
         set_temperature = kwargs[ATTR_TEMPERATURE]
 
-        # Check if HEATING_8C mode is active (not just supported)
         if (
             hasattr(self._device, "ac_merit_a")
             and self._device.ac_merit_a == ToshibaAcMeritA.HEATING_8C
         ):
-            # upper limit for target temp
             if set_temperature > 13:
                 set_temperature = 13
-            # lower limit for target temp
             elif set_temperature < 5:
                 set_temperature = 5
         else:
-            # upper limit for target temp
             if set_temperature > 30:
                 set_temperature = 30
-            # lower limit for target temp
             elif set_temperature < 17:
                 set_temperature = 17
 
         await self._device.set_ac_temperature(set_temperature)
 
-    # PRESET MODE / POWER SETTING
-
     @property
     def preset_mode(self) -> str | None:
-        """Return the current preset mode, e.g., home, away, temp.
-
-        Requires SUPPORT_PRESET_MODE.
-        """
         if self._device.ac_self_cleaning == ToshibaAcSelfCleaning.ON:
             return "cleaning"
 
         if not self.is_on:
             return None
 
-        return pretty_enum_name(self._device.ac_power_selection)
+        try:
+            return pretty_enum_name(self._device.ac_power_selection)
+        except Exception:
+            return None
 
     @property
     def preset_modes(self) -> list[str] | None:
-        """Return a list of available preset modes.
-
-        Requires SUPPORT_PRESET_MODE.
-        """
         return get_feature_list(self._device.supported.ac_power_selection)
 
     async def async_turn_on(self) -> None:
@@ -152,7 +151,6 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
             await self.async_turn_off()
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set new preset mode."""
         _LOGGER.info("Toshiba Climate setting preset_mode: %s", preset_mode)
 
         feature_list_id = get_feature_by_name(
@@ -163,7 +161,6 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
 
     @property
     def hvac_mode(self) -> HVACMode | str | None:
-        """Return hvac operation ie. heat, cool mode."""
         if not self.is_on:
             return HVACMode.OFF
 
@@ -171,7 +168,6 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
 
     @property
     def hvac_modes(self) -> list[HVACMode] | list[str]:
-        """Return the list of available hvac operation modes."""
         available_modes = [HVACMode.OFF]
         for toshiba_mode, hvac_mode in TOSHIBA_TO_HVAC_MODE.items():
             if toshiba_mode in self._device.supported.ac_mode:
@@ -179,7 +175,6 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         return available_modes
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        """Set new target hvac mode."""
         _LOGGER.info("Toshiba Climate setting hvac_mode: %s", hvac_mode)
 
         if hvac_mode == HVACMode.OFF:
@@ -190,7 +185,6 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
             await self._device.set_ac_mode(HVAC_MODE_TO_TOSHIBA[hvac_mode])
 
     async def async_set_fan_mode(self, fan_mode):
-        """Set new target fan mode."""
         _LOGGER.info("Toshiba Climate setting fan_mode: %s", fan_mode)
         if fan_mode == FAN_OFF:
             await self._device.set_ac_fan_mode(ToshibaAcStatus.OFF)
@@ -204,34 +198,35 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
 
     @property
     def fan_mode(self) -> str | None:
-        """Return the fan setting."""
-        return pretty_enum_name(self._device.ac_fan_mode)
+        try:
+            return pretty_enum_name(self._device.ac_fan_mode)
+        except Exception:
+            return None
 
     async def async_set_swing_mode(self, swing_mode: str) -> None:
-        """Set new target swing operation."""
-        swing_mode = swing_mode.title().replace("_", " ")
-        feature_list_id = get_feature_by_name(list(ToshibaAcSwingMode), swing_mode)
+        normalized = swing_mode.title().replace("_", " ")
+        feature_list_id = get_feature_by_name(list(ToshibaAcSwingMode), normalized)
         if feature_list_id is not None:
             await self._device.set_ac_swing_mode(feature_list_id)
 
     @property
     def swing_mode(self) -> str | None:
-        """Return the swing setting."""
-        return pretty_enum_name(self._device.ac_swing_mode)
+        try:
+            result = pretty_enum_name(self._device.ac_swing_mode)
+            return result
+        except Exception:
+            return None
 
     @property
     def current_temperature(self) -> float | None:
-        """Return the current temperature."""
         return self._device.ac_indoor_temperature
 
     @property
     def target_temperature(self) -> float | None:
-        """Return the temperature we try to reach."""
         return self._device.ac_temperature
 
     @property
     def min_temp(self) -> float:
-        """Return the minimum temperature."""
         if (
             hasattr(self._device, "ac_merit_a")
             and self._device.ac_merit_a == ToshibaAcMeritA.HEATING_8C
@@ -241,7 +236,6 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
 
     @property
     def max_temp(self) -> float:
-        """Return the maximum temperature."""
         if (
             hasattr(self._device, "ac_merit_a")
             and self._device.ac_merit_a == ToshibaAcMeritA.HEATING_8C
@@ -251,11 +245,6 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any]:
-        """Return entity specific state attributes.
-
-        Implemented by platform classes. Convention for attribute names
-        is lowercase snake_case.
-        """
         return {
             "merit_a_feature": self._device.ac_merit_a.name,
             "merit_b_feature": self._device.ac_merit_b.name,

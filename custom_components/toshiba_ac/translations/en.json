@@ -54,6 +54,12 @@
       },
       "high_power_mode": {
         "name": "High Power Mode"
+      },
+      "comfort_mode": {
+        "name": "Comfort"
+      },
+      "sleep_care_mode": {
+        "name": "Sleep Care"
       }
     }
   }
