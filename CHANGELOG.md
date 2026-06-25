@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.6.0] - 2026-06-25
+
+### ⚠️ Breaking change — integration domain renamed
+
+The Home Assistant **domain** changed from `toshiba_ac` to **`toshiba_ac_community`**. This was required to be accepted into the default HACS catalog: two default integrations cannot share a domain, and the original [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) already ships `toshiba_ac` (see [hacs/default#7350](https://github.com/hacs/default/pull/7350)).
+
+Home Assistant has no automatic way to move a configured integration to a new domain, so **existing users must remove and re-add the integration once** after updating. Your Toshiba account credentials need to be entered again.
+
+**Migration steps:**
+
+1. Update to **2026.6.0** in HACS, then **restart Home Assistant**. The old integration entry will show as *not loaded* ("integration not found") — this is expected.
+2. Go to **Settings → Devices & Services**, open the old **Toshiba AC (Community)** entry, and **delete it** (this also removes its now-orphaned devices/entities and frees the entity IDs).
+3. **Restart Home Assistant** again.
+4. **Add integration → Toshiba AC (Community)** and enter your Toshiba credentials.
+5. If any new entities come back with a `_2` suffix, it means an old entity ID was still registered — delete the leftover and rename the new entity to the original ID. Reusing the **same entity IDs** preserves your automations, dashboards, and long-term energy statistics.
+
+> The `reconnect` service is now `toshiba_ac_community.reconnect` (was `toshiba_ac.reconnect`). Update any automations/scripts that call it.
+
+Nothing else changed in this release — the underlying `toshiba-ac` library and all HA-layer reliability fixes are identical to 2026.5.5.
+
 ## [2026.5.5] - 2026-05-17
 
 ### Changed

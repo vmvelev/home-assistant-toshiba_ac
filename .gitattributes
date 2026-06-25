@@ -1,0 +1,9 @@
+# Normalize line endings to LF for all text files, in the repo and the
+# working tree. Prevents Windows/WSL editors from re-saving files as CRLF
+# and producing whitespace-only diffs.
+* text=auto eol=lf
+
+# Treat binary assets as binary so they are never line-ending converted.
+*.png binary
+*.zip binary
+*.ico binary

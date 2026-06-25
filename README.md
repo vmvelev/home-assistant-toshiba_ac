@@ -9,6 +9,17 @@
 
 Toshiba AC integration into home-assistant.io
 
+> ### ⚠️ Upgrading from 2026.5.5 or earlier? (one-time action required)
+>
+> In **2026.6.0** the integration domain changed from `toshiba_ac` to **`toshiba_ac_community`** (required to join the default HACS catalog — see [hacs/default#7350](https://github.com/hacs/default/pull/7350)). Home Assistant can't move a configured integration to a new domain automatically, so you must **remove and re-add the integration once**:
+>
+> 1. Update in HACS and **restart HA** — the old entry will show as *not loaded* (expected).
+> 2. **Settings → Devices & Services** → delete the old **Toshiba AC (Community)** entry → **restart HA**.
+> 3. **Add integration → Toshiba AC (Community)** and re-enter your Toshiba credentials.
+> 4. Reuse the **same entity IDs** (delete any leftover that forces a `_2` suffix) to keep automations, dashboards, and energy history intact.
+>
+> The service is now `toshiba_ac_community.reconnect`. Full details in the [changelog](CHANGELOG.md).
+
 ## About this fork
 
 This project is a maintained fork of [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac), the original Home Assistant integration for Toshiba AC. Full credit to @h4de5 and all upstream contributors for the base integration.
@@ -71,7 +82,7 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 - Download [latest release](https://github.com/vmvelev/home-assistant-toshiba_ac/releases)
 - Create a folder: `custom_components` in your home-assistant config directory
-- Extract content (the folder `toshiba_ac`) of the release zip into the newly created directory
+- Extract content (the folder `toshiba_ac_community`) of the release zip into the newly created directory
 - Reboot Home Assistant
 - Follow common integration manual
 
@@ -110,7 +121,7 @@ Add this to your `configuration.yaml` to enable detailed logging:
 logger:
   default: warning
   logs:
-    custom_components.toshiba_ac: debug
+    custom_components.toshiba_ac_community: debug
     toshiba_ac: debug
 ```
 
