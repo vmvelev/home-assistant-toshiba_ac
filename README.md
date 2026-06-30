@@ -11,11 +11,11 @@ Toshiba AC integration into home-assistant.io
 
 > ### ⚠️ Upgrading from 2026.5.5 or earlier? (one-time action required)
 >
-> In **2026.6.0** the integration domain changed from `toshiba_ac` to **`toshiba_ac_community`** (required to join the default HACS catalog — see [hacs/default#7350](https://github.com/hacs/default/pull/7350)). Home Assistant can't move a configured integration to a new domain automatically, so you must **remove and re-add the integration once**:
+> In **2026.6.0** the integration domain changed from `toshiba_ac` to **`toshiba_ac_community`** (required to join the default HACS catalog - see [hacs/default#7350](https://github.com/hacs/default/pull/7350)). Home Assistant can't move a configured integration to a new domain automatically, so you must **remove and re-add the integration once**:
 >
-> 1. Update in HACS and **restart HA** — the old entry will show as *not loaded* (expected).
-> 2. **Settings → Devices & Services** → delete the old **Toshiba AC (Community)** entry → **restart HA**.
-> 3. **Add integration → Toshiba AC (Community)** and re-enter your Toshiba credentials.
+> 1. Update in HACS and **restart HA** - the old entry will show as *not loaded* (expected).
+> 2. **Settings -> Devices & Services** -> delete the old **Toshiba AC (Community)** entry -> **restart HA**.
+> 3. **Add integration -> Toshiba AC (Community)** and re-enter your Toshiba credentials.
 > 4. Reuse the **same entity IDs** (delete any leftover that forces a `_2` suffix) to keep automations, dashboards, and energy history intact.
 >
 > The service is now `toshiba_ac_community.reconnect`. Full details in the [changelog](CHANGELOG.md).
@@ -51,8 +51,8 @@ Current releases use **`toshiba-ac` 0.3.13** (HTTP/API stability in the library)
 
 | Your situation | Suggestion |
 |----------------|------------|
-| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **Toshiba AC (Community)** — this fork (install via HACS custom repository below) |
-| You prefer the original integration and upstream is responding to issues | **Toshiba AC** — [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) in HACS |
+| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **Toshiba AC (Community)** - this fork (install via HACS custom repository below) |
+| You prefer the original integration and upstream is responding to issues | **Toshiba AC** - [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) in HACS |
 | Not sure | Pick one, note the **integration version** in bug reports (for example `2026.5.5`), and check whether the [official Toshiba app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) works |
 
 ### Upstream and maintenance
@@ -88,9 +88,13 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 ### Common manual to activate the integration
 
-- The integration should be available as `Toshiba AC` in the `Add integration dialog`
+- The integration should be available as `Toshiba AC (Community)` in the `Add integration dialog`
 - You need to enter your Toshiba AC account credentials (same as within the app)
 - There is no bounding/registering of new AC units possible with this code - please continue to use the app for this
+
+### Upgrading from an older version (domain rename in 2026.6.0)
+
+In **2026.6.0** the Home Assistant domain changed from `toshiba_ac` to `toshiba_ac_community`. Existing users must remove and re-add the integration once. **Do not just delete and re-add** - deleting the config entry leaves orphaned entities that hold your entity IDs and cause `_2` suffixes. Follow the step-by-step migration (standard UI path, plus an advanced path that also preserves devices) in the [CHANGELOG](CHANGELOG.md#202660---2026-06-25).
 
 ## Troubleshooting
 
