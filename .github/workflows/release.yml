@@ -16,7 +16,7 @@ jobs:
         id: read_property
         uses: ashley-taylor/read-json-property-action@v1.0
         with:
-          path: custom_components/toshiba_ac/manifest.json
+          path: custom_components/toshiba_ac_community/manifest.json
           property: version
 
       - name: Get Latest Release
@@ -42,7 +42,7 @@ jobs:
         if: ${{ steps.read_property.outputs.value != steps.get_latest_release.outputs.name }}
         uses: TheDoctor0/zip-release@0.4.2
         with:
-          filename: toshiba_ac-${{ steps.read_property.outputs.value }}.zip
+          filename: toshiba_ac_community-${{ steps.read_property.outputs.value }}.zip
           directory: custom_components/
           type: zip
 
@@ -54,5 +54,5 @@ jobs:
           tag: ${{ steps.read_property.outputs.value }}
           name: ${{ steps.read_property.outputs.value }}
           body: ${{ github.event.head_commit.message }}
-          files: custom_components/toshiba_ac-${{ steps.read_property.outputs.value }}.zip
+          files: custom_components/toshiba_ac_community-${{ steps.read_property.outputs.value }}.zip
           gzip: false

@@ -93,7 +93,7 @@ All imports follow the [official HA documentation](https://developers.home-assis
 - Entities check `device.supported` feature flags before creation
 
 **Services (`services.yaml`)**
-- `toshiba_ac.reconnect`: Force reconnection to Toshiba cloud (reloads all config entries)
+- `toshiba_ac_community.reconnect`: Force reconnection to Toshiba cloud (reloads all config entries)
 
 **Diagnostics (`diagnostics.py`)**
 - Provides diagnostic data for troubleshooting via HA's diagnostics feature
@@ -109,7 +109,7 @@ All imports follow the [official HA documentation](https://developers.home-assis
 The integration uses HA's built-in retry mechanisms:
 - **Connection failures**: Raise `ConfigEntryNotReady` → HA retries with exponential backoff
 - **Auth failures (401/403)**: Raise `ConfigEntryAuthFailed` → triggers reauth flow
-- **Manual recovery**: Call `toshiba_ac.reconnect` service to reload the integration
+- **Manual recovery**: Call `toshiba_ac_community.reconnect` service to reload the integration
 
 ## Related Resources
 

@@ -101,7 +101,7 @@ body:
         logger:
           default: warning
           logs:
-            custom_components.toshiba_ac: debug
+            custom_components.toshiba_ac_community: debug
             toshiba_ac: debug
         ```
         Then restart Home Assistant and reproduce the issue.
