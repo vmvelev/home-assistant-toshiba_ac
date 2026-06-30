@@ -11,14 +11,13 @@ Toshiba AC integration into home-assistant.io
 
 > ### ⚠️ Upgrading from 2026.5.5 or earlier? (one-time action required)
 >
-> In **2026.6.0** the integration domain changed from `toshiba_ac` to **`toshiba_ac_community`** (required to join the default HACS catalog - see [hacs/default#7350](https://github.com/hacs/default/pull/7350)). Home Assistant can't move a configured integration to a new domain automatically, so you must **remove and re-add the integration once**:
+> In **2026.6.0** the integration domain changed from `toshiba_ac` to **`toshiba_ac_community`** (required to join the default HACS catalog - see [hacs/default#7350](https://github.com/hacs/default/pull/7350)). Home Assistant can't move a configured integration to a new domain automatically, so you must **remove and re-add the integration once**. There are two ways to do it:
 >
-> 1. Update in HACS and **restart HA** - the old entry will show as *not loaded* (expected).
-> 2. **Settings -> Devices & Services** -> delete the old **Toshiba AC (Community)** entry -> **restart HA**.
-> 3. **Add integration -> Toshiba AC (Community)** and re-enter your Toshiba credentials.
-> 4. Reuse the **same entity IDs** (delete any leftover that forces a `_2` suffix) to keep automations, dashboards, and energy history intact.
+> **A) UI only - simplest, but you get NEW entities.** Delete the old entry, then **Add integration -> Toshiba AC (Community)** and re-enter your credentials. ⚠️ This **cannot keep your original entity IDs**: once the old integration is removed, Home Assistant hides its leftover entities, so you can't delete them from the UI to free the IDs. The re-added entities come back with new IDs (typically a `_2` suffix, since the old IDs are still silently held), so you'll need to **point your automations and dashboards at the new entity IDs**, and long-term energy statistics restart.
 >
-> The service is now `toshiba_ac_community.reconnect`. Full details in the [changelog](CHANGELOG.md).
+> **B) Preserve entity IDs, devices, and history - requires file access.** Before re-adding, stop Home Assistant and rewrite `toshiba_ac` to `toshiba_ac_community` in `.storage/core.entity_registry` (the `platform` field) and `.storage/core.device_registry` (the device `identifiers`), then start HA and re-add. Step-by-step in the [changelog](CHANGELOG.md#202660---2026-06-25).
+>
+> The service is now `toshiba_ac_community.reconnect`.
 
 ## About this fork
 
@@ -94,7 +93,7 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 ### Upgrading from an older version (domain rename in 2026.6.0)
 
-In **2026.6.0** the Home Assistant domain changed from `toshiba_ac` to `toshiba_ac_community`. Existing users must remove and re-add the integration once. **Do not just delete and re-add** - deleting the config entry leaves orphaned entities that hold your entity IDs and cause `_2` suffixes. Follow the step-by-step migration (standard UI path, plus an advanced path that also preserves devices) in the [CHANGELOG](CHANGELOG.md#202660---2026-06-25).
+In **2026.6.0** the Home Assistant domain changed from `toshiba_ac` to `toshiba_ac_community`, so existing users must remove and re-add the integration once. Be aware that a **UI-only remove + re-add leaves you with new entities** (a `_2` suffix): once the old integration is removed, Home Assistant hides its leftover entities and you cannot delete them from the UI to free the original IDs, so automations, dashboards, and energy history tied to the old IDs break. To **keep your entity IDs, devices, and history**, use the registry-edit path (requires file access). Both options are documented in the [CHANGELOG](CHANGELOG.md#202660---2026-06-25).
 
 ## Troubleshooting
 

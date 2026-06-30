@@ -10,28 +10,26 @@ The Home Assistant **domain** changed from `toshiba_ac` to **`toshiba_ac_communi
 
 Home Assistant has no automatic way to move a configured integration to a new domain, so **existing users must remove and re-add the integration once** after updating. Your Toshiba account credentials need to be entered again.
 
-> ⚠️ **Important:** deleting the old config entry does **not** delete its entities - they stay behind as *unavailable* and keep holding their entity IDs (e.g. `climate.living_room`). If you re-add the integration without clearing them first, the new entities collide and come back with a `_2` suffix, breaking automations, dashboards, and energy history. Follow the steps below to avoid that.
+> ⚠️ **Important - the UI cannot preserve your entity IDs.** When you delete the old config entry, its entities stay behind in the registry still holding their IDs (e.g. `climate.living_room`). But once the old integration is gone, Home Assistant **hides those leftover entities from the Entities UI**, so you cannot delete them there to free the IDs. A UI-only re-add therefore comes back with new IDs (a `_2` suffix). Pick the path below that matches whether you need to keep your IDs/devices/history.
 
-**Migration - standard (UI only, works for everyone):**
+**Option A - UI only (simplest, but you get NEW entities):**
 
-This reclaims your original **entity IDs** (no `_2`), so automations, dashboards, and long-term energy statistics keep working. Your **devices** are recreated fresh, so any per-device *area* or *name* customisation must be reapplied afterwards.
+No file access needed, but your **original entity IDs, devices, and history are not kept** - you'll have to point automations/dashboards at the new IDs, and energy statistics restart.
 
-1. Update to **2026.6.0** in HACS, then **restart Home Assistant**. The old entry will show as *not loaded* ("integration not found") - this is expected.
+1. Update to **2026.6.0** in HACS, then **restart Home Assistant**. (HACS may leave the old `toshiba_ac` folder behind, so the old entry can keep working instead of showing as *not loaded* - that's fine.)
 2. **Settings -> Devices & Services** -> open the old **Toshiba AC (Community)** entry -> **delete it**.
-3. **Settings -> Devices & Services -> Entities** tab -> filter **Status: Unavailable** -> identify the leftover Toshiba entities by their names (your AC names, e.g. *Living Room*) and **delete them**. This frees the entity IDs. (Their entity IDs may not contain "toshiba", so filter by status rather than searching.)
-4. **Restart Home Assistant**.
-5. **Add integration -> Toshiba AC (Community)** -> enter your Toshiba credentials. Your entities return with their original IDs.
-6. (Optional) Reapply any area/name customisation on the new devices; the old, now-hidden devices can be ignored.
+3. **Add integration -> Toshiba AC (Community)** -> enter your Toshiba credentials. The new entities come back with a `_2` suffix (the old IDs are still silently held). Update your automations and dashboards to the new IDs.
 
-**Migration - advanced (preserves devices too, requires file access):**
+**Option B - registry edit (preserves entity IDs, devices, and history; requires file access):**
 
-If you also want to keep your **devices** (area, name, and device-level history) intact, rewrite the registry so the existing rows adopt the new domain instead of being recreated. **Take a full backup first.**
+Rewrite the registry so your existing rows adopt the new domain and are reclaimed on re-add. This is the **only** way to keep your IDs, devices, areas, and history. **Take a full backup first.**
 
-1. Update to **2026.6.0**, restart, then delete the old config entry (step 2 above). Do **not** delete the entities.
+1. Update to **2026.6.0** in HACS, restart, then delete the old config entry. (Leave the entities alone.)
 2. Make a full backup, then **stop Home Assistant Core** (e.g. `ha core stop` over SSH, or stop the container).
 3. In `.storage/core.entity_registry`, replace every `toshiba_ac"` with `toshiba_ac_community"` (the trailing quote matters - it targets the old `"platform":"toshiba_ac"` values without touching already-renamed ones).
 4. In `.storage/core.device_registry`, do the same replacement in the Toshiba device `identifiers` tuples (`["toshiba_ac", …]` -> `["toshiba_ac_community", …]`).
-5. **Start Home Assistant**, then **Add integration -> Toshiba AC (Community)** and enter your credentials. Entities **and** devices reclaim their original identities with full history preserved.
+5. Delete the leftover `custom_components/toshiba_ac` folder if HACS left it behind.
+6. **Start Home Assistant**, then **Add integration -> Toshiba AC (Community)** and enter your credentials. Entities **and** devices reclaim their original identities with full history preserved.
 
 > The `reconnect` service is now `toshiba_ac_community.reconnect` (was `toshiba_ac.reconnect`). Update any automations/scripts that call it.
 
