@@ -167,6 +167,9 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         if not self.is_on:
             return HVACMode.OFF
 
+        if self._device.ac_self_cleaning == ToshibaAcSelfCleaning.ON:
+            return HVACMode.DRY
+
         return TOSHIBA_TO_HVAC_MODE[self._device.ac_mode]
 
     @property
