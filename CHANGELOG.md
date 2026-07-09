@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.8.0] - 2026-07-10
+
+### Added - Wireless LED switch
+
+New **Wireless LED** switch entity (in the Configuration section of the device page) controlling the unit's wireless/status LED - the same control as "Wireless LED" in the official Toshiba app. Unlike the other switches, it stays available while the AC is off.
+
+Requires protocol library **`toshiba-ac-community` 0.5.0**, which adds Wireless LED state and control support. The LED maps to a previously unmapped byte of the AC state protocol (`0x01` = on, `0x02` = off), discovered by diffing state pushes while toggling the LED in the official app, and verified end-to-end on real hardware.
+
+**Note:** the Toshiba cloud only starts reporting the LED state after it has been changed at least once. If the switch does not appear for your unit, toggle "Wireless LED" once in the official Toshiba app, then reload the integration.
+
 ## [2026.7.0] - 2026-07-09
 
 ### Changed - protocol library now maintained in this project's own fork

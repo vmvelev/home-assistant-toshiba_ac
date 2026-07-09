@@ -10,10 +10,10 @@
   "issue_tracker": "https://github.com/vmvelev/home-assistant-toshiba_ac/issues",
   "requirements": [
     "azure-iot-device==2.15.0rc1",
-    "toshiba-ac-community==0.4.1",
+    "toshiba-ac-community==0.5.0",
     "janus==1.0.0"
   ],
   "ssdp": [],
-  "version": "2026.7.0",
+  "version": "2026.8.0",
   "zeroconf": []
 }
