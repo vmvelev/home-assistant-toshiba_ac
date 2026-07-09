@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.9.0] - 2026-07-10
+
+### Added - Indoor temperature sensor
+
+New **Indoor temperature** sensor entity per AC, exposing the room temperature measured by the unit as a standalone sensor (requested in [discussion #20](https://github.com/vmvelev/home-assistant-toshiba_ac/discussions/20)). The value was previously only accessible as the `current_temperature` attribute of the climate entity; a dedicated sensor makes it directly usable on dashboard cards, in history graphs and in automations. Existing outdoor temperature sensors are unchanged.
+
 ## [2026.8.0] - 2026-07-10
 
 ### Added - Wireless LED switch
