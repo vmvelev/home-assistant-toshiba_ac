@@ -36,7 +36,7 @@ The repository has no local test suite. Validation happens via GitHub Actions:
 ## Dependencies
 
 ### External Library
-The integration depends on the `toshiba_ac` PyPI library (fork: `github.com/KaSroka/Toshiba-AC-control`):
+The integration depends on the `toshiba_ac` library (import name unchanged), distributed on PyPI as `toshiba-ac-community` from this project's own fork `github.com/vmvelev/Toshiba-AC-control` (forked from `github.com/KaSroka/Toshiba-AC-control`):
 - Handles authentication with Toshiba cloud HTTP API
 - Manages Azure AMQP connection for real-time device state updates
 - Provides `ToshibaAcDeviceManager` and `ToshibaAcDevice` classes
@@ -44,8 +44,8 @@ The integration depends on the `toshiba_ac` PyPI library (fork: `github.com/KaSr
 All AC communication logic lives in that library, not in this repo.
 
 ### Requirements Files
-- `requirements.txt` - Runtime: `toshiba-ac==0.3.11`, `janus==1.0.0`
-- `requirements_dev.txt` - Development: `homeassistant==2026.1.2` + pre-commit + git install of toshiba-ac fork
+- `requirements.txt` - Runtime: `toshiba-ac-community==0.4.1`, `azure-iot-device==2.15.0rc1`, `janus==1.0.0`
+- `requirements_dev.txt` - Development: `homeassistant==2026.1.2` + pre-commit + git install of the `toshiba-ac-community` fork (`vmvelev/Toshiba-AC-control`)
 
 ## Home Assistant Imports
 
@@ -113,7 +113,7 @@ The integration uses HA's built-in retry mechanisms:
 
 ## Related Resources
 
-- **API Repository**: [KaSroka/Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control) - All device communication logic lives here. Issues related to API/device communication should be reported there, not in this repo.
+- **API Repository**: [vmvelev/Toshiba-AC-control](https://github.com/vmvelev/Toshiba-AC-control) (this project's fork of [KaSroka/Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control), published to PyPI as `toshiba-ac-community`) - All device communication logic lives here. Issues related to API/device communication should be reported there, not in this repo.
 - **Compatible Devices**: [Issue #45](https://github.com/h4de5/home-assistant-toshiba_ac/issues/45) contains the community-maintained list of compatible devices.
 
 ## Common User Issues

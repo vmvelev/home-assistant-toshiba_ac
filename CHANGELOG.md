@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.7.0] - 2026-07-09
+
+### Changed - protocol library now maintained in this project's own fork
+
+The integration now depends on **`toshiba-ac-community`** (0.4.1) instead of upstream `toshiba-ac`. This is a fork of [KaSroka/Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control) maintained at [vmvelev/Toshiba-AC-control](https://github.com/vmvelev/Toshiba-AC-control), so library-level fixes (HTTP/AMQP behaviour) can ship without waiting on upstream.
+
+Library `0.4.1` is upstream `toshiba-ac` 0.3.13 plus packaging modernization (versioneer replaced with `setuptools-scm`) and one log-noise fix: transient Toshiba WAF `403` rate-limit responses (already retried internally, and covered by AMQP push) are now logged at `INFO`/`WARNING` instead of `WARNING`/`ERROR`, so they no longer spam the Home Assistant log. The Python import name is unchanged (`toshiba_ac`).
+
 ## [2026.6.0] - 2026-06-25
 
 ### ⚠️ Breaking change - integration domain renamed

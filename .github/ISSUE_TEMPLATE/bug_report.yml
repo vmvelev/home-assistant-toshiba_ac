@@ -21,7 +21,7 @@ body:
         ### Is this an API/communication issue?
 
         Issues related to **communication with the AC device itself** should be reported to the API repository:
-        👉 [KaSroka/Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control)
+        👉 [vmvelev/Toshiba-AC-control](https://github.com/vmvelev/Toshiba-AC-control)
 
         This repository only handles the Home Assistant integration part.
 
@@ -45,7 +45,7 @@ body:
           required: true
         - label: My device works with the official Toshiba AC app (NOT the North America version)
           required: true
-        - label: I have checked that this is not an API issue (belongs to [Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control))
+        - label: I have checked that this is not an API issue (belongs to [Toshiba-AC-control](https://github.com/vmvelev/Toshiba-AC-control))
           required: true
         - label: I have read the [README](https://github.com/vmvelev/home-assistant-toshiba_ac#readme) and [compatible devices list](https://github.com/vmvelev/home-assistant-toshiba_ac/discussions/2)
           required: true
