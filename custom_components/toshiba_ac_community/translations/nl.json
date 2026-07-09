@@ -38,6 +38,9 @@
       }
     },
     "sensor": {
+      "indoor_temperature": {
+        "name": "Binnentemperatuur"
+      },
       "outdoor_temperature": {
         "name": "Buitentemperatuur"
       }

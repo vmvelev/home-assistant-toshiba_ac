@@ -34,8 +34,9 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
                 "AC device %s does not support energy monitoring", device.name
             )
 
-        # Outdoor temperature sensor - value may be None when outdoor unit is off
-        new_entities.append(ToshibaTempSensor(device))
+        # Temperature sensors - outdoor value may be None when outdoor unit is off
+        new_entities.append(ToshibaTempSensor(device, "indoor_temperature"))
+        new_entities.append(ToshibaTempSensor(device, "outdoor_temperature"))
 
     if new_entities:
         _LOGGER.info("Adding %d sensor entities", len(new_entities))
@@ -96,20 +97,25 @@ class ToshibaTempSensor(ToshibaAcStateEntity, SensorEntity):
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_has_entity_name = True
 
-    def __init__(self, device: ToshibaAcDevice):
-        """Initialize the sensor."""
+    def __init__(self, device: ToshibaAcDevice, key: str):
+        """Initialize the sensor for the given temperature (indoor_temperature or outdoor_temperature)."""
         super().__init__(device)
-        self._attr_unique_id = f"{device.ac_unique_id}_outdoor_temperature"
-        self._attr_translation_key = "outdoor_temperature"
+        self._key = key
+        self._attr_unique_id = f"{device.ac_unique_id}_{key}"
+        self._attr_translation_key = key
+
+    @property
+    def _temperature(self) -> int | None:
+        return getattr(self._device, f"ac_{self._key}")
 
     @property
     def available(self) -> bool:
         """Return True if sensor is available."""
-        if self._device.ac_outdoor_temperature is None:
+        if self._temperature is None:
             return False
         return super().available
 
     @property
     def native_value(self) -> int | None:
         """Return the value reported by the sensor."""
-        return self._device.ac_outdoor_temperature
+        return self._temperature
