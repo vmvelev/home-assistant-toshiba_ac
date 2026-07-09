@@ -23,16 +23,16 @@ Toshiba AC integration into home-assistant.io
 
 This project is a maintained fork of [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac), the original Home Assistant integration for Toshiba AC. Full credit to @h4de5 and all upstream contributors for the base integration.
 
-When upstream activity slowed, this fork was created to keep a **working, stable** integration for the community. Upstream has since become active again (for example with `toshiba-ac` 0.3.13 in their `2026.5.1` release). Both projects now share the same underlying library version; the difference is mainly in **Home Assistant integration behaviour**.
+When upstream activity slowed, this fork was created to keep a **working, stable** integration for the community. Upstream (h4de5) has since become active again. This fork now also maintains its **own fork of the protocol library**, published as `toshiba-ac-community`, so library-level fixes can ship without waiting on upstream; the difference from h4de5 is mainly in **Home Assistant integration behaviour**.
 
 ### Two layers
 
 | Layer | Repository | What it does |
 |-------|------------|--------------|
-| **Protocol library** | [KaSroka/Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control) (`toshiba-ac` on PyPI) | HTTP login, device list, AMQP/MQTT push updates |
+| **Protocol library** | [vmvelev/Toshiba-AC-control](https://github.com/vmvelev/Toshiba-AC-control) (`toshiba-ac-community` on PyPI), forked from [KaSroka/Toshiba-AC-control](https://github.com/KaSroka/Toshiba-AC-control) | HTTP login, device list, AMQP/MQTT push updates |
 | **HA integration** | This fork, or [h4de5's repo](https://github.com/h4de5/home-assistant-toshiba_ac) | Config flow, entities, startup, reconnect, how HA talks to the library |
 
-Library fixes (HTTP pacing, 403 retries, and similar) belong in **Toshiba-AC-control** and are tracked in both integrations when the dependency is bumped. This fork adds extra logic in `custom_components/toshiba_ac` for problems that showed up in Home Assistant specifically.
+Library fixes (HTTP pacing, 403 retries, and similar) belong in **[vmvelev/Toshiba-AC-control](https://github.com/vmvelev/Toshiba-AC-control)** (forked from KaSroka). This fork adds extra logic in `custom_components/toshiba_ac_community` for problems that showed up in Home Assistant specifically.
 
 ### What this fork adds (on top of upstream)
 
@@ -44,7 +44,7 @@ These are **HA-layer** changes; see the [changelog](https://github.com/vmvelev/h
 - **Short startup delay** - reduces simultaneous API calls when many integrations start at once
 - **Event-driven reconnect** - detects Azure IoT Hub disconnects and reloads the integration only if the SDK does not recover on its own (typically within 30 seconds)
 
-Current releases use **`toshiba-ac` 0.3.13** (HTTP/API stability in the library) plus the items above. Use **2026.5.5** or later.
+Current releases use **`toshiba-ac-community` 0.4.1** (same library code as upstream `toshiba-ac` 0.3.13, now maintained in this project's own fork) plus the items above. Use **2026.5.5** or later.
 
 ### Which repository should I use?
 
@@ -131,7 +131,7 @@ logger:
 ### Reporting Issues
 
 - **Home Assistant integration issues**: [Open an issue here](https://github.com/vmvelev/home-assistant-toshiba_ac/issues)
-- **API/Device communication issues**: [Open an issue at the API repository](https://github.com/KaSroka/Toshiba-AC-control/issues)
+- **API/Device communication issues**: [Open an issue at the protocol library repository](https://github.com/vmvelev/Toshiba-AC-control/issues)
 
 ## Compatible devices
 

@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: API / Device Communication Issues
-    url: https://github.com/KaSroka/Toshiba-AC-control/issues
+    url: https://github.com/vmvelev/Toshiba-AC-control/issues
     about: For issues related to communication with the AC device itself, please open an issue in the API repository.
   - name: Compatible Devices List
     url: https://github.com/vmvelev/home-assistant-toshiba_ac/discussions/2
