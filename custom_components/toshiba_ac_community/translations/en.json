@@ -54,6 +54,9 @@
       },
       "high_power_mode": {
         "name": "High Power Mode"
+      },
+      "wireless_led": {
+        "name": "Wireless LED"
       }
     }
   }

@@ -31,6 +31,9 @@
       },
       "high_power_mode": {
         "name": "Hochleistungs Modus"
+      },
+      "wireless_led": {
+        "name": "Wireless-LED"
       }
     },
     "sensor": {

@@ -13,6 +13,7 @@ from toshiba_ac.device import (
     ToshibaAcFeatures,
     ToshibaAcMeritA,
     ToshibaAcStatus,
+    ToshibaAcWirelessLed,
 )
 
 from homeassistant.components.switch import (
@@ -20,6 +21,7 @@ from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription,
 )
+from homeassistant.const import EntityCategory
 
 from .const import DOMAIN
 from .entity import ToshibaAcStateEntity
@@ -34,6 +36,7 @@ class ToshibaAcSwitchDescription(SwitchEntityDescription):
 
     device_class = SwitchDeviceClass.SWITCH
     off_icon: str | None = None
+    requires_ac_on: bool = True
 
     async def async_turn_on(self, _device: ToshibaAcDevice):
         """Turn the switch on."""
@@ -53,6 +56,10 @@ class ToshibaAcSwitchDescription(SwitchEntityDescription):
         later to determine if it should be available based on the current AC mode.
         """
         return False
+
+    def is_supported_by(self, device: ToshibaAcDevice):
+        """Return True if the device supports this switch (checked at entity creation)."""
+        return self.is_supported(device.supported)
 
 
 TEnum = TypeVar("TEnum", bound=Enum)
@@ -86,6 +93,31 @@ class ToshibaAcEnumSwitchDescription(
     def is_supported(self, features: ToshibaAcFeatures):
         """Return True if the switch is available."""
         return self.ac_on_value in self.get_features_attr(features)
+
+
+@dataclass(kw_only=True)
+class ToshibaAcWirelessLedSwitchDescription(ToshibaAcSwitchDescription):
+    """Describe the wireless LED switch."""
+
+    async def async_turn_on(self, device: ToshibaAcDevice):
+        """Turn the LED on."""
+        await device.set_ac_wireless_led(ToshibaAcWirelessLed.ON)
+
+    async def async_turn_off(self, device: ToshibaAcDevice):
+        """Turn the LED off."""
+        await device.set_ac_wireless_led(ToshibaAcWirelessLed.OFF)
+
+    def is_on(self, device: ToshibaAcDevice):
+        """Return True if the LED is on."""
+        return device.ac_wireless_led == ToshibaAcWirelessLed.ON
+
+    def is_supported(self, _features: ToshibaAcFeatures):
+        """LED support is not in the merit features; support is decided in is_supported_by."""
+        return True
+
+    def is_supported_by(self, device: ToshibaAcDevice):
+        """Support is only detectable from the reported state: no report means no LED."""
+        return device.ac_wireless_led is not ToshibaAcWirelessLed.NONE
 
 
 _SWITCH_DESCRIPTIONS: Sequence[ToshibaAcSwitchDescription] = [
@@ -122,6 +154,14 @@ _SWITCH_DESCRIPTIONS: Sequence[ToshibaAcSwitchDescription] = [
         ac_on_value=ToshibaAcMeritA.HIGH_POWER,
         ac_off_value=ToshibaAcMeritA.OFF,
     ),
+    ToshibaAcWirelessLedSwitchDescription(
+        key="wireless_led",
+        translation_key="wireless_led",
+        icon="mdi:led-on",
+        off_icon="mdi:led-off",
+        entity_category=EntityCategory.CONFIG,
+        requires_ac_on=False,
+    ),
 ]
 
 
@@ -133,7 +173,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     devices: list[ToshibaAcDevice] = await device_manager.get_devices()
     for device in devices:
         for entity_description in _SWITCH_DESCRIPTIONS:
-            if entity_description.is_supported(device.supported):
+            if entity_description.is_supported_by(device):
                 new_entities.append(ToshibaAcSwitchEntity(device, entity_description))
             else:
                 _LOGGER.debug(
@@ -166,6 +206,8 @@ class ToshibaAcSwitchEntity(ToshibaAcStateEntity, SwitchEntity):
     @property
     def available(self):
         """Return True if entity is available."""
+        if not self.entity_description.requires_ac_on:
+            return super().available
         return (
             super().available
             and self._device.ac_status == ToshibaAcStatus.ON
