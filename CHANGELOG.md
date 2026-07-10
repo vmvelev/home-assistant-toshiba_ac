@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [2026.7.4] - 2026-07-10
 
-### Fixed - missing integration icon
+### Fixed - complete brand image set shipped locally
 
-The integration icon showed as "icon not available" (in the HACS update dialog, integration pages, and elsewhere) since the domain rename in 2026.6.0: Home Assistant fetches icons from the brands CDN by domain, which only knows the old `toshiba_ac` domain, and [home-assistant/brands no longer accepts custom integration submissions](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api). The icon and logo now ship inside the integration itself (`brand/` folder, supported since Home Assistant 2026.3) and take priority over the CDN - no action needed, the images appear after updating. On Home Assistant older than 2026.3 the icon remains unavailable.
+Since the 2026.6.0 domain rename the brands CDN does not know this integration's domain, and [home-assistant/brands no longer accepts custom integration submissions](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api) - so anything that loads images from the CDN shows an "icon not available" placeholder. A base `icon.png` already shipped inside the integration (served locally by Home Assistant 2026.3+ and preferred over the CDN); this release completes the local set with `icon@2x.png`, `logo.png`, and `logo@2x.png`, fixing missing images on high-DPI displays and in logo placements.
+
+**Known limitation:** the image in the **HACS update dialog** cannot be fixed from this repository. Current HACS builds that URL directly against the brands CDN instead of Home Assistant's local brands endpoint, so it 404s for every custom integration added after the brands repository closed to submissions (February 2026). This needs a fix in HACS itself.
 
 ## [2026.7.3] - 2026-07-10
 
