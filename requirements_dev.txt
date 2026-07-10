@@ -2,5 +2,5 @@
 homeassistant==2026.1.2
 # git+https://github.com/home-assistant/core.git@2026.1.2#egg=homeassistant
 # Matches manifest.json runtime pins
-git+https://github.com/vmvelev/Toshiba-AC-control@v0.5.0#egg=toshiba-ac-community
+git+https://github.com/vmvelev/Toshiba-AC-control@v0.6.0#egg=toshiba-ac-community
 pre-commit

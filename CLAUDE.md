@@ -44,7 +44,7 @@ The integration depends on the `toshiba_ac` library (import name unchanged), dis
 All AC communication logic lives in that library, not in this repo.
 
 ### Requirements Files
-- `requirements.txt` - Runtime: `toshiba-ac-community==0.5.0`, `azure-iot-device==2.15.0rc1`, `janus==1.0.0`
+- `requirements.txt` - Runtime: `toshiba-ac-community` (pinned, same version as manifest.json), `azure-iot-device==2.15.0rc1`, `janus==1.0.0`
 - `requirements_dev.txt` - Development: `homeassistant==2026.1.2` + pre-commit + git install of the `toshiba-ac-community` fork (`vmvelev/Toshiba-AC-control`)
 
 ## Home Assistant Imports

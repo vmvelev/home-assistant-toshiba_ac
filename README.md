@@ -43,14 +43,17 @@ These are **HA-layer** changes; see the [changelog](https://github.com/vmvelev/h
 - **Startup rate-limit (403) handling** - transient WAF/rate-limit responses at boot are retried by Home Assistant instead of prompting reconfiguration
 - **Short startup delay** - reduces simultaneous API calls when many integrations start at once
 - **Event-driven reconnect** - detects Azure IoT Hub disconnects and reloads the integration only if the SDK does not recover on its own (typically within 30 seconds)
+- **Wireless LED switch** - control the unit's wireless/status LED from Home Assistant (2026.7.1)
+- **Indoor temperature sensor** - the room temperature measured by each unit as a standalone sensor entity (2026.7.2)
+- **H.DA swing mode** - supported on units with fixed swing positions, e.g. Daiseikai 10 (2026.7.3)
 
-Current releases use **`toshiba-ac-community` 0.4.1** (same library code as upstream `toshiba-ac` 0.3.13, now maintained in this project's own fork) plus the items above. Use **2026.5.5** or later.
+Current releases use **`toshiba-ac-community` 0.6.0** (the protocol library maintained in this project's own fork) plus the items above. Use **2026.5.5** or later.
 
 ### Which repository should I use?
 
 | Your situation | Suggestion |
 |----------------|------------|
-| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **Toshiba AC (Community)** - this fork (install via HACS custom repository below) |
+| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **Toshiba AC (Community)** - this fork, available directly in HACS |
 | You prefer the original integration and upstream is responding to issues | **Toshiba AC** - [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) in HACS |
 | Not sure | Pick one, note the **integration version** in bug reports (for example `2026.5.5`), and check whether the [official Toshiba app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) works |
 
@@ -68,20 +71,15 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 ### Installation with HACS
 
-> **Note:** This fork is not yet in the default HACS catalog. You need to add it as a custom repository first.
-
-1. In HACS, click the three-dot menu (⋮) in the top-right corner and select **Custom repositories**
-2. Enter the repository URL: `https://github.com/vmvelev/home-assistant-toshiba_ac`
-3. Select **Integration** as the category and click **Add**
-4. Search for **Toshiba AC (Community)** in HACS integrations and click **Install**
-5. Reboot Home Assistant
-6. Follow the common integration manual below
+1. Search for **Toshiba AC (Community)** in HACS and click **Download**
+2. Reboot Home Assistant
+3. Follow the common integration manual below
 
 ### or: Manual installation
 
-- Download [latest release](https://github.com/vmvelev/home-assistant-toshiba_ac/releases)
+- Download the **Source code (zip)** of the [latest release](https://github.com/vmvelev/home-assistant-toshiba_ac/releases)
 - Create a folder: `custom_components` in your home-assistant config directory
-- Extract content (the folder `toshiba_ac_community`) of the release zip into the newly created directory
+- Copy the folder `custom_components/toshiba_ac_community` from the archive into the newly created directory
 - Reboot Home Assistant
 - Follow common integration manual
 
@@ -143,6 +141,6 @@ If your device is compatible with the [official Toshiba AC mobile app](https://p
 ## More links and resources
 
 - Feature Request in the [home-assistant community](https://community.home-assistant.io/t/toshiba-home-ac-control/137698)
-- my first draft to communicate with the rest service using an [Toshiba API client in PHP](https://gist.github.com/vmvelev/7f97db0f4efc265e48904d4a84dab4fb)
-- extended example to retrieve state of the AC unit and update the timeprogram using an [Toshiba API client in python](https://github.com/vmvelev/home-assistant-toshiba_ac/tree/keep-http-api/custom_components/toshiba_ac/toshiba_ac_api)
-- finally using AMQP interface to send state changes directly in [updated python package](https://github.com/KaSroka/Toshiba-AC-control)
+- h4de5's first draft to communicate with the rest service using a [Toshiba API client in PHP](https://gist.github.com/h4de5/7f97db0f4efc265e48904d4a84dab4fb)
+- extended example to retrieve state of the AC unit and update the timeprogram using a [Toshiba API client in python](https://github.com/h4de5/home-assistant-toshiba_ac/tree/keep-http-api/custom_components/toshiba_ac/toshiba_ac_api)
+- finally using AMQP interface to send state changes directly in [KaSroka's python package](https://github.com/KaSroka/Toshiba-AC-control)

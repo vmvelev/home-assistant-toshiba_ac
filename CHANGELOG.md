@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.7.3] - 2026-07-10
+
+### Added - H.DA swing mode
+
+New **H.DA** swing mode, selectable like any other swing mode on units that support fixed swing positions (e.g. Daiseikai 10) - the same airflow mode as "H.DA" on the remote. Contributed at the library level by [@Madalinbv](https://github.com/Madalinbv) in [Toshiba-AC-control#1](https://github.com/vmvelev/Toshiba-AC-control/pull/1), following up on [#15](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/15).
+
+Requires protocol library **`toshiba-ac-community` 0.6.0**, which also fixes a state-parsing crash (`KeyError`) when a unit reported H.DA already engaged via the IR remote or the official app.
+
+### Changed - available in the default HACS catalog
+
+The integration is now part of the default HACS store ([hacs/default#7350](https://github.com/hacs/default/pull/7350)) - no custom repository needed, just search for **Toshiba AC (Community)** in HACS. Existing installs added as a custom repository keep working and updating as before.
+
 ## [2026.7.2] - 2026-07-10
 
 ### Added - Indoor temperature sensor
