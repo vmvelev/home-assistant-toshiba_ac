@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.7.4] - 2026-07-10
+
+### Fixed - missing integration icon
+
+The integration icon showed as "icon not available" (in the HACS update dialog, integration pages, and elsewhere) since the domain rename in 2026.6.0: Home Assistant fetches icons from the brands CDN by domain, which only knows the old `toshiba_ac` domain, and [home-assistant/brands no longer accepts custom integration submissions](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api). The icon and logo now ship inside the integration itself (`brand/` folder, supported since Home Assistant 2026.3) and take priority over the CDN - no action needed, the images appear after updating. On Home Assistant older than 2026.3 the icon remains unavailable.
+
 ## [2026.7.3] - 2026-07-10
 
 ### Added - H.DA swing mode
