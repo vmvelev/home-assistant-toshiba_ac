@@ -35,6 +35,9 @@
       "sleep_care": {
         "name": "Schlafmodus"
       },
+      "floor": {
+        "name": "Bodenmodus"
+      },
       "high_power_mode": {
         "name": "Hochleistungs Modus"
       },

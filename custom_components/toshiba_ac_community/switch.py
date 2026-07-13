@@ -163,6 +163,14 @@ _SWITCH_DESCRIPTIONS: Sequence[ToshibaAcSwitchDescription] = [
         ac_off_value=ToshibaAcMeritA.OFF,
     ),
     ToshibaAcEnumSwitchDescription(
+        key="floor",
+        translation_key="floor",
+        icon="mdi:heat-wave",
+        ac_attr_name="ac_merit_a",
+        ac_on_value=ToshibaAcMeritA.FLOOR,
+        ac_off_value=ToshibaAcMeritA.OFF,
+    ),
+    ToshibaAcEnumSwitchDescription(
         key="high_power_mode",
         translation_key="high_power_mode",
         icon="mdi:high-power",

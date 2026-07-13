@@ -61,6 +61,9 @@
       "sleep_care": {
         "name": "Sleep Care"
       },
+      "floor": {
+        "name": "Floor mode"
+      },
       "high_power_mode": {
         "name": "High Power Mode"
       },
