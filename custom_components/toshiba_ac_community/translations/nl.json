@@ -55,6 +55,12 @@
       "eco_mode": {
         "name": "ECO modus"
       },
+      "comfort": {
+        "name": "Comfort"
+      },
+      "sleep_care": {
+        "name": "Slaapmodus"
+      },
       "high_power_mode": {
         "name": "High Power modus"
       },
