@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.7.5] - 2026-07-18
+
+### Fixed - "429 Too Many Requests" blocking login for all users
+
+Since around 2026-07-17 the Toshiba cloud rejects any login attempt that does not carry a `Device-ID` header with **HTTP 429 Too Many Requests**, so adding, reloading or restarting the integration failed for everyone - while the official app kept working, because it logs in once and reuses its token for years ([#25](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/25), [h4de5#297](https://github.com/h4de5/home-assistant-toshiba_ac/issues/297)). Protocol library **`toshiba-ac-community` 0.6.1** now sends a `Device-ID` header on every request, which restores login. Verified against the live API on real hardware.
+
+Root cause identified by [@Dirkske71](https://github.com/Dirkske71) in [h4de5/home-assistant-toshiba_ac#297](https://github.com/h4de5/home-assistant-toshiba_ac/issues/297#issuecomment-5008015523).
+
 ## [2026.7.4] - 2026-07-10
 
 ### Fixed - complete brand image set shipped locally
