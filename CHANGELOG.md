@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.7.6] - 2026-07-19
+
+### Fixed - HACS download tracking
+
+HACS now installs a `toshiba_ac_community.zip` release asset, allowing GitHub's asset download counter to track installations and updates. Previous releases were installed from GitHub's automatically generated source archives, whose downloads are not counted; tracking starts with this release.
+
 ## [2026.7.5] - 2026-07-18
 
 ### Fixed - "429 Too Many Requests" blocking login for all users

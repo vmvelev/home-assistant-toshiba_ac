@@ -1,0 +1,24 @@
+name: Release asset
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - name: Build release archive
+        run: |
+          cd custom_components/toshiba_ac_community
+          zip -r "$GITHUB_WORKSPACE/toshiba_ac_community.zip" .
+      - name: Upload release archive
+        run: gh release upload "${{ github.event.release.tag_name }}" toshiba_ac_community.zip --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
