@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.7.7] - 2026-07-21
+
+### Fixed - stable Device-ID for Toshiba API requests
+
+Protocol library **`toshiba-ac-community` 0.6.2** now reuses Home Assistant's persisted per-installation device ID for every HTTP session, matching the official app's stable identity and avoiding repeated HTTP 403 responses when sessions are recreated.
+
 ## [2026.7.6] - 2026-07-19
 
 ### Fixed - HACS download tracking
