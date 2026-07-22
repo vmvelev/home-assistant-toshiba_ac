@@ -1,6 +1,8 @@
 {
   "name": "Toshiba AC (Community)",
   "content_in_root": false,
+  "filename": "toshiba_ac_community.zip",
   "render_readme": true,
-  "homeassistant": "2025.3.0"
+  "homeassistant": "2025.3.0",
+  "zip_release": true
 }
