@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Fixed - energy sensor stuck at unknown after startup
+
+Energy sensors now synchronize with consumption data already fetched during
+integration setup. Previously, the first energy update could arrive before the
+Home Assistant entity registered its callback, leaving the sensor at
+`unknown` until Toshiba reported a different value.
+
 ## [2026.7.7] - 2026-07-21
 
 ### Fixed - stable Device-ID for Toshiba API requests
