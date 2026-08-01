@@ -57,11 +57,16 @@ class ToshibaPowerSensor(ToshibaAcEntity, SensorEntity):
         self._attr_unique_id = f"{self._device.ac_unique_id}_sensor"
         self._attr_name = f"{self._device.name} Energy Consumption"
 
-    async def state_changed(self, _dev: ToshibaAcDevice):
-        """Call if we need to change the ha state."""
+    def _update_energy_consumption(self) -> None:
+        """Read the latest energy consumption from the device."""
         self._ac_energy_consumption = self._device.ac_energy_consumption
-        if self._ac_energy_consumption:
-            self._attr_last_reset = self._ac_energy_consumption.since
+        self._attr_last_reset = (
+            self._ac_energy_consumption.since if self._ac_energy_consumption else None
+        )
+
+    async def state_changed(self, _dev: ToshibaAcDevice):
+        """Call if we need to change the HA state."""
+        self._update_energy_consumption()
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):
@@ -74,6 +79,10 @@ class ToshibaPowerSensor(ToshibaAcEntity, SensorEntity):
         # (rather than in the __init__)
         # self._device.register_callback(self.async_write_ha_state)
         self._device.on_energy_consumption_changed_callback.add(self.state_changed)
+        # The manager starts fetching energy as soon as it discovers the devices.
+        # Synchronize here in case that first update happened before this entity
+        # registered its callback.
+        self._update_energy_consumption()
 
     async def async_will_remove_from_hass(self):
         """Entity being removed from hass."""
