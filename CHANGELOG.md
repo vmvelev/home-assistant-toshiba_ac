@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.8.0] - 2026-08-01
+
+### Changed - energy consumption is polled hourly instead of every 10 minutes
+
+Protocol library **`toshiba-ac-community` 0.6.3** now reads energy consumption once an hour rather than every 10 minutes, cutting the integration's steady-state requests to Toshiba's cloud from roughly 192 to 48 per day per unit - about a 75% reduction.
+
+Nothing is lost: energy is reported as a year-to-date cumulative total, and Home Assistant aggregates it into hourly statistics, so a 10-minute poll never produced any resolution the energy dashboard could use. The poll stays aligned to the top of each hour, so hourly energy attribution is unchanged, and the first reading is still fetched immediately when the integration starts.
+
+Fewer requests also means less exposure to the rate limiting that has repeatedly broken this integration ([#25](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/25), [#13](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/13)): when a poll was rejected, its retry chain ran longer than the 10-minute interval itself, so a failing poll overlapped the next one and kept the rate limit warm.
+
 ## [2026.7.7] - 2026-07-21
 
 ### Fixed - stable Device-ID for Toshiba API requests
