@@ -12,6 +12,12 @@ Nothing is lost: energy is reported as a year-to-date cumulative total, and Home
 
 Fewer requests also means less exposure to the rate limiting that has repeatedly broken this integration ([#25](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/25), [#13](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/13)): when a poll was rejected, its retry chain ran longer than the 10-minute interval itself, so a failing poll overlapped the next one and kept the rate limit warm.
 
+### Fixed - energy sensor stuck at `unknown` after startup
+
+The energy sensor now reads any consumption value that was already fetched during setup, instead of waiting for the next one to arrive. The integration begins fetching energy as soon as it discovers your units, which can finish before the sensor is ready to listen - and because the library only reports energy when the total *changes*, an unchanged total on later polls left the sensor at `unknown`. On a unit that was not running, it could stay that way indefinitely.
+
+Contributed by [@Biohospitalix](https://github.com/Biohospitalix) in [#28](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/28).
+
 ## [2026.7.7] - 2026-07-21
 
 ### Fixed - stable Device-ID for Toshiba API requests
