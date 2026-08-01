@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed - energy consumption is polled hourly instead of every 10 minutes
 
-Protocol library **`toshiba-ac-community` 0.6.3** now reads energy consumption once an hour rather than every 10 minutes, cutting the integration's steady-state requests to Toshiba's cloud from roughly 192 to 48 per day per unit - about a 75% reduction.
+Protocol library **`toshiba-ac-community` 0.6.3** now reads energy consumption once an hour rather than every 10 minutes. Energy requests drop from 144 to 24 per day per unit, taking the integration's total steady-state requests to Toshiba's cloud from roughly 192 to 72 per day - about a 62% reduction.
 
 Nothing is lost: energy is reported as a year-to-date cumulative total, and Home Assistant aggregates it into hourly statistics, so a 10-minute poll never produced any resolution the energy dashboard could use. The poll stays aligned to the top of each hour, so hourly energy attribution is unchanged, and the first reading is still fetched immediately when the integration starts.
 
