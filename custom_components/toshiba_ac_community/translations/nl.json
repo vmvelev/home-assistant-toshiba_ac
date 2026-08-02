@@ -18,6 +18,15 @@
       }
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "energy_poll_interval": "Interval voor energie-opvraging (minuten)"
+        }
+      }
+    }
+  },
   "entity": {
     "select": {
       "cdu_silent": {

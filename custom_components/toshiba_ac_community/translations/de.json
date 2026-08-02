@@ -18,6 +18,15 @@
       }
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "energy_poll_interval": "Intervall für Energieabfrage (Minuten)"
+        }
+      }
+    }
+  },
   "entity": {
     "switch": {
       "8_degc_mode": {

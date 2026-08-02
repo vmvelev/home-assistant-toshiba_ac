@@ -11,7 +11,12 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.event import async_call_later
 
-from .const import DOMAIN
+from .const import (
+    CONF_ENERGY_POLL_INTERVAL,
+    DEFAULT_ENERGY_POLL_INTERVAL,
+    DOMAIN,
+    ENERGY_POLL_INTERVAL_OPTIONS,
+)
 
 PLATFORMS = ["climate", "select", "sensor", "switch"]
 
@@ -29,6 +34,11 @@ CONNECTION_TIMEOUT = 30
 _RELOAD_DELAY = 30
 
 _AUTH_KEYWORDS = ("401", "unauthorize", "credential", "password")
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the integration when its options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 class _ReconnectManager:
@@ -120,6 +130,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data["device_id"],
         sas_token=None,
     )
+    energy_poll_interval = entry.options.get(
+        CONF_ENERGY_POLL_INTERVAL, DEFAULT_ENERGY_POLL_INTERVAL
+    )
+    if energy_poll_interval not in ENERGY_POLL_INTERVAL_OPTIONS:
+        _LOGGER.warning(
+            "Invalid energy polling interval %s; using %s minutes",
+            energy_poll_interval,
+            DEFAULT_ENERGY_POLL_INTERVAL,
+        )
+        energy_poll_interval = DEFAULT_ENERGY_POLL_INTERVAL
+    device_manager.FETCH_ENERGY_CONSUMPTION_PERIOD_MINUTES = energy_poll_interval
     reconnect_mgr = _ReconnectManager(hass, entry)
 
     try:
@@ -157,6 +178,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     reconnect_mgr.attach_disconnect_handler(device_manager)
     hass.data[DOMAIN][entry.entry_id] = device_manager
     hass.data[DOMAIN][f"{entry.entry_id}_reconnect"] = reconnect_mgr
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     await _async_register_services(hass)
 
     # Pre-fetch devices before forwarding to platforms.

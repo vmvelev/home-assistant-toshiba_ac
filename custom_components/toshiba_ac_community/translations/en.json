@@ -18,6 +18,15 @@
       }
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "energy_poll_interval": "Energy polling interval (minutes)"
+        }
+      }
+    }
+  },
   "entity": {
     "select": {
       "cdu_silent": {
