@@ -114,13 +114,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Toshiba AC from a config entry."""
     # Never pass a stored SAS token on startup -- it may have expired while HA
     # was stopped. Always fetch a fresh one via RegisterMobileDevice.
+    # The access token IS reused: it is long lived, and skipping /Login avoids
+    # the most aggressively rate-limited endpoint on Toshiba's API. A stale
+    # token degrades to one 401 followed by a re-login inside the library.
     device_manager = ToshibaAcDeviceManager(
         entry.data["username"],
         entry.data["password"],
         entry.data["device_id"],
         sas_token=None,
+        access_token=entry.data.get("access_token"),
+        access_token_type=entry.data.get("access_token_type"),
+        consumer_id=entry.data.get("consumer_id"),
     )
     reconnect_mgr = _ReconnectManager(hass, entry)
+
+    async def access_token_updated(token_info: tuple[str, str, str]) -> None:
+        access_token, access_token_type, consumer_id = token_info
+        hass.config_entries.async_update_entry(
+            entry,
+            data={
+                **entry.data,
+                "access_token": access_token,
+                "access_token_type": access_token_type,
+                "consumer_id": consumer_id,
+            },
+        )
+
+    # Registered before connect() so the token from the very first login (or a
+    # re-login after expiry) is persisted too.
+    device_manager.on_access_token_updated_callback.add(access_token_updated)
 
     try:
         new_sas_token = await asyncio.wait_for(
