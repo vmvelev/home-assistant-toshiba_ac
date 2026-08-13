@@ -14,6 +14,8 @@ TO_REDACT = {
     "username",
     "password",
     "sas_token",
+    "access_token",
+    "consumer_id",
     "device_id",
     "ac_id",
     "ac_unique_id",
