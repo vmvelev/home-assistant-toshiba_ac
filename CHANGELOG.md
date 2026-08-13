@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.8.1] - 2026-08-14
+
+This release bundles protocol library **`toshiba-ac-community` 0.7.0**.
+
+### Fixed - energy consumption polling works again
+
+Toshiba's WAF rejects the browser-like User-Agent the library used to send, answering HTTP 403 on the energy endpoint (and recently on state reads too), which left energy sensors at `unknown`. The library no longer sends it. Devices without metering are now also skipped individually instead of aborting the readings of every unit in the account. Contributed by [@Biohospitalix](https://github.com/Biohospitalix) in [Toshiba-AC-control#6](https://github.com/vmvelev/Toshiba-AC-control/pull/6).
+
+### Fixed - unrecognised swing values no longer break entities (2026 Shorai Curve)
+
+2026 Shorai Curve units report vertical and horizontal vane positions combined in one new byte range, which the library decoded with a bare table lookup - one unrecognised value raised `KeyError`, broke command handling, and could leave the entity unavailable until a known value was reported again ([#32](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/32), [Toshiba-AC-control#2](https://github.com/vmvelev/Toshiba-AC-control/issues/2)). The new encoding is now decoded onto the existing swing modes, and any future unknown value degrades to a logged warning instead of a crash. Independent per-axis swing control remains tracked in the library issue. Thanks to [@devcide](https://github.com/devcide) for the protocol reverse engineering and to [@harmpert](https://github.com/harmpert) and [@simontaen](https://github.com/simontaen) for detailed reports.
+
+### Fixed - fractional target temperatures are applied instead of silently dropped
+
+Home Assistant sends temperatures as floats, and external thermostats produce half-degree targets such as 22.5; the library only accepted whole numbers and raised `KeyError`, so such setpoints never reached the unit. Fractional values now round to the nearest whole degree (half up). Contributed by [@neoKushan](https://github.com/neoKushan) in [Toshiba-AC-control#10](https://github.com/vmvelev/Toshiba-AC-control/pull/10).
+
+### Changed - login is skipped on restart by reusing the cached access token
+
+The long-lived access token is now stored in the config entry and reused, so `/api/Consumer/Login` - the most aggressively rate-limited endpoint on Toshiba's API - is only called on first setup or when the token expires ([Toshiba-AC-control#8](https://github.com/vmvelev/Toshiba-AC-control/issues/8)). HTTP 429 responses are also classified as rate limits and retried with the slow backoff policy instead of three rapid attempts ([Toshiba-AC-control#4](https://github.com/vmvelev/Toshiba-AC-control/issues/4), reported by [@KohleIT2023](https://github.com/KohleIT2023)).
+
 ## [2026.8.0] - 2026-08-01
 
 ### Changed - energy consumption is polled hourly instead of every 10 minutes
