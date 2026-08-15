@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.8.2] - 2026-08-15
+
+### Fixed - adding the integration works again
+
+2026.8.1 broke the config flow: every login attempt during setup ended in "Unexpected error", even with correct credentials ([Toshiba-AC-control#13](https://github.com/vmvelev/Toshiba-AC-control/issues/13), reported by [@AndreasKzk](https://github.com/AndreasKzk)). The access token introduced in 2026.8.1 was read from the connection object *after* it had already been torn down, which crashed validation right after a successful login. Existing entries were unaffected - only new setups and re-adds failed. The token is now captured before teardown, and a regression test covers the flow.
+
+Because each failed attempt still performed a real login on Toshiba's side, repeated retries could bring an account close to lockout - if you saw "attempts remaining before account lockout", wait an hour before trying again with this version.
+
 ## [2026.8.1] - 2026-08-14
 
 This release bundles protocol library **`toshiba-ac-community` 0.7.0**.
