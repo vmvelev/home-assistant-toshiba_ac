@@ -86,6 +86,16 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         """Return True if the device is on or completely off."""
         return self._device.ac_status == ToshibaAcStatus.ON
 
+    def _heating_8c_max_temp(self) -> int:
+        """Return the ceiling for 8C frost-protection mode on this unit.
+
+        Model id 3 units (e.g. Shorai Edge) accept 5-16, model id 2 units
+        (e.g. Shorai+) cap at 13 (#35). If a model 3 unit turns out to cap
+        at 13, the failure is benign: the unit reports its real state back
+        and the UI corrects itself.
+        """
+        return 16 if self._device.ac_model_id == "3" else 13
+
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         set_temperature = kwargs[ATTR_TEMPERATURE]
@@ -96,8 +106,8 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
             and self._device.ac_merit_a == ToshibaAcMeritA.HEATING_8C
         ):
             # upper limit for target temp
-            if set_temperature > 13:
-                set_temperature = 13
+            if set_temperature > self._heating_8c_max_temp():
+                set_temperature = self._heating_8c_max_temp()
             # lower limit for target temp
             elif set_temperature < 5:
                 set_temperature = 5
@@ -246,7 +256,7 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
             hasattr(self._device, "ac_merit_a")
             and self._device.ac_merit_a == ToshibaAcMeritA.HEATING_8C
         ):
-            return 13
+            return self._heating_8c_max_temp()
         return 30
 
     @property

@@ -48,6 +48,8 @@ async def async_get_config_entry_diagnostics(
                 "ac_unique_id": "**REDACTED**",
                 "device_id": "**REDACTED**",
                 "firmware_version": device.firmware_version,
+                "merit_feature": device.merit_feature,
+                "ac_model_id": device.ac_model_id,
                 "ac_status": device.ac_status.name if device.ac_status else None,
                 "ac_mode": device.ac_mode.name if device.ac_mode else None,
                 "ac_temperature": device.ac_temperature,
