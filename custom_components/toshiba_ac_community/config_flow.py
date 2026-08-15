@@ -42,6 +42,13 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     try:
         sas_token = await device_manager.connect()
         _LOGGER.debug("Toshiba connection OK")
+        # http_api is guaranteed set after a successful connect(), but
+        # shutdown() below clears it, so the token fields must be read here.
+        # Storing them means setup never has to repeat the login validate did.
+        assert device_manager.http_api is not None
+        access_token = device_manager.http_api.access_token
+        access_token_type = device_manager.http_api.access_token_type
+        consumer_id = device_manager.http_api.consumer_id
     except ToshibaAcHttpApiAuthError as ex:
         _LOGGER.error("Toshiba connection error %s", ex)
         raise InvalidAuth from ex
@@ -51,17 +58,14 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     finally:
         await device_manager.shutdown()
 
-    # http_api is guaranteed set after a successful connect(); storing its
-    # access token means setup never has to repeat the login validate just did.
-    assert device_manager.http_api is not None
     return {
         "username": data["username"],
         "password": data["password"],
         "device_id": device_id,
         "sas_token": sas_token,
-        "access_token": device_manager.http_api.access_token,
-        "access_token_type": device_manager.http_api.access_token_type,
-        "consumer_id": device_manager.http_api.consumer_id,
+        "access_token": access_token,
+        "access_token_type": access_token_type,
+        "consumer_id": consumer_id,
     }
 
 
