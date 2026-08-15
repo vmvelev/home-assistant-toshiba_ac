@@ -24,7 +24,7 @@ from custom_components.toshiba_ac_community.climate import ToshibaClimate
 
 # Real devices from the #35 report (names, merit strings, states from the log).
 SHORAI_EDGE = ("Salon", "6c02", "3", "30421b41316400101b23fe02000010ff000000")
-SHORAI_PLUS = ("Chambre", "2c00", "2", "30421741316400101822fe0b00001002000000")
+SHORAI_PLUS = ("Bureau", "2c00", "2", "30421b41316400101a23fe0200001002000000")
 
 
 async def _make_climate(
