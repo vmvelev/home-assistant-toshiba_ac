@@ -19,6 +19,11 @@
     }
   },
   "entity": {
+    "binary_sensor": {
+      "self_cleaning": {
+        "name": "Selbstreinigung"
+      }
+    },
     "switch": {
       "8_degc_mode": {
         "name": "8 °C Heizbetrieb"

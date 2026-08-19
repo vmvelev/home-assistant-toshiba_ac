@@ -13,7 +13,7 @@ from homeassistant.helpers.event import async_call_later
 
 from .const import DOMAIN
 
-PLATFORMS = ["climate", "select", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "climate", "select", "sensor", "switch"]
 
 _LOGGER = logging.getLogger(__name__)
 

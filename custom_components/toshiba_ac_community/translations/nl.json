@@ -19,6 +19,11 @@
     }
   },
   "entity": {
+    "binary_sensor": {
+      "self_cleaning": {
+        "name": "Zelfreiniging"
+      }
+    },
     "select": {
       "cdu_silent": {
         "name": "Buitenunit stille mode",
