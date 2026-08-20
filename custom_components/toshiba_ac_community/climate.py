@@ -8,6 +8,7 @@ from typing import Any
 from toshiba_ac.device import (
     ToshibaAcDevice,
     ToshibaAcFanMode,
+    ToshibaAcHorizontalSwingMode,
     ToshibaAcMeritA,
     ToshibaAcMode,
     ToshibaAcPowerSelection,
@@ -40,6 +41,13 @@ TOSHIBA_TO_HVAC_MODE = {
 }
 
 HVAC_MODE_TO_TOSHIBA = {v: k for k, v in TOSHIBA_TO_HVAC_MODE.items()}
+
+# NONE means "no particular position", which is the horizontal swing's off state.
+HORIZONTAL_SWING_TO_NAME = {
+    e: "Off" if e == ToshibaAcHorizontalSwingMode.NONE else pretty_enum_name(e)
+    for e in ToshibaAcHorizontalSwingMode
+}
+NAME_TO_HORIZONTAL_SWING = {v: k for k, v in HORIZONTAL_SWING_TO_NAME.items()}
 
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -80,6 +88,19 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         self._attr_unique_id = f"{self._device.ac_unique_id}_climate"
         self._attr_fan_modes = get_feature_list(self._device.supported.ac_fan_mode)
         self._attr_swing_modes = get_feature_list(self._device.supported.ac_swing_mode)
+
+    @property
+    def supported_features(self) -> ClimateEntityFeature:
+        """Return the supported features, adding horizontal swing once the device reports it.
+
+        2026 Shorai Curve units encode the two vanes independently. Support is
+        only detectable from the unit having reported that encoding at least
+        once, which may first happen after startup, so this is dynamic.
+        """
+        features = self._attr_supported_features
+        if self._device.supports_independent_swing:
+            features |= ClimateEntityFeature.SWING_HORIZONTAL_MODE
+        return features
 
     @property
     def is_on(self):
@@ -237,6 +258,26 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
     def swing_mode(self) -> str | None:
         """Return the swing setting."""
         return pretty_enum_name(self._device.ac_swing_mode)
+
+    @property
+    def swing_horizontal_modes(self) -> list[str] | None:
+        """Return the list of horizontal swing positions."""
+        if not self._device.supports_independent_swing:
+            return None
+        return list(NAME_TO_HORIZONTAL_SWING)
+
+    @property
+    def swing_horizontal_mode(self) -> str | None:
+        """Return the horizontal swing setting."""
+        if not self._device.supports_independent_swing:
+            return None
+        return HORIZONTAL_SWING_TO_NAME[self._device.ac_horizontal_swing_mode]
+
+    async def async_set_swing_horizontal_mode(self, swing_horizontal_mode: str) -> None:
+        """Set new horizontal swing position."""
+        mode = NAME_TO_HORIZONTAL_SWING.get(swing_horizontal_mode)
+        if mode is not None:
+            await self._device.set_ac_horizontal_swing_mode(mode)
 
     @property
     def current_temperature(self) -> float | None:
