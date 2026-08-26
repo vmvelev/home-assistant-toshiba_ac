@@ -1,7 +1,8 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Das Gerät ist bereits konfiguriert."
+      "already_configured": "Das Gerät ist bereits konfiguriert.",
+      "reauth_successful": "Erneute Authentifizierung war erfolgreich"
     },
     "error": {
       "cannot_connect": "Fehler beim Verbinden",
@@ -9,6 +10,12 @@
       "unknown": "Unerwarteter Fehler"
     },
     "step": {
+      "reauth_confirm": {
+        "description": "Die Zugangsdaten für {username} sind nicht mehr gültig. Gib das aktuelle Passwort ein, um die Verbindung wiederherzustellen.",
+        "data": {
+          "password": "Passwort"
+        }
+      },
       "user": {
         "data": {
           "host": "Host",

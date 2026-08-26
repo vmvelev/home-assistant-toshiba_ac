@@ -1,6 +1,7 @@
 """Config flow for Toshiba AC integration."""
 from __future__ import annotations
 
+from collections.abc import Mapping
 import logging
 import random
 from typing import Any
@@ -101,6 +102,51 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+        )
+
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> FlowResult:
+        """Handle re-authentication when the stored credentials stop working."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Confirm re-authentication by re-validating the account password.
+
+        The username is fixed to the existing entry; only the password is asked,
+        since re-auth is triggered for the same account whose credentials expired.
+        """
+        reauth_entry = self.hass.config_entries.async_get_entry(
+            self.context["entry_id"]
+        )
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            try:
+                data = await validate_input(
+                    self.hass,
+                    {
+                        "username": reauth_entry.data["username"],
+                        "password": user_input["password"],
+                    },
+                )
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
+            else:
+                return self.async_update_reload_and_abort(reauth_entry, data=data)
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required("password"): str}),
+            description_placeholders={"username": reauth_entry.data["username"]},
+            errors=errors,
         )
 
 
