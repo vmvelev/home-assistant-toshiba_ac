@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.8.4] - 2026-08-29
+
+This release bundles protocol library **`toshiba-ac-community` 0.7.2**.
+
+### Added - reauthentication flow
+
+When your stored credentials stop working (for example after a password change), Home Assistant now prompts for the new password instead of failing silently until you delete and re-add the integration ([#42](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/42) by [@lackas](https://github.com/lackas)).
+
+### Fixed
+
+- The device registry showed an internal account-derived id as the device model; it now shows the real model id, e.g. "Model 3" ([#41](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/41) by [@lackas](https://github.com/lackas), closing the last part of [#4](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/4)).
+- The same Toshiba account could be added twice, producing duplicate devices ([#43](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/43) by [@lackas](https://github.com/lackas)).
+- Library 0.7.2: a wrong password is no longer retried. Previously three rapid login attempts counted toward Toshiba's account lockout.
+
 ## [2026.8.3] - 2026-08-20
 
 This release bundles protocol library **`toshiba-ac-community` 0.7.1**.
