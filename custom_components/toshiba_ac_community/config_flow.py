@@ -1,6 +1,7 @@
 """Config flow for Toshiba AC integration."""
 from __future__ import annotations
 
+from collections.abc import Mapping
 import logging
 import random
 from typing import Any
@@ -26,12 +27,17 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input(
+    hass: HomeAssistant, data: dict[str, Any], device_id: str | None = None
+) -> dict[str, Any]:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
+    Pass device_id to keep an already registered device instead of registering a
+    new one with Toshiba, as re-authentication does.
     """
-    device_id = f"{random.getrandbits(64):016x}"
+    if device_id is None:
+        device_id = f"{random.getrandbits(64):016x}"
 
     _LOGGER.debug("Toshiba validate input %s %s", data["username"], device_id)
 
@@ -101,6 +107,48 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+        )
+
+    async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> FlowResult:
+        """Handle re-authentication when the stored credentials stop working."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Confirm re-authentication by re-validating the account password.
+
+        The username is fixed to the existing entry; only the password is asked,
+        since re-auth is triggered for the same account whose credentials expired.
+        """
+        reauth_entry = self._get_reauth_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            try:
+                data = await validate_input(
+                    self.hass,
+                    {
+                        "username": reauth_entry.data["username"],
+                        "password": user_input["password"],
+                    },
+                    reauth_entry.data.get("device_id"),
+                )
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
+            else:
+                return self.async_update_reload_and_abort(reauth_entry, data=data)
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required("password"): str}),
+            description_placeholders={"username": reauth_entry.data["username"]},
+            errors=errors,
         )
 
 
