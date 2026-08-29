@@ -27,12 +27,17 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input(
+    hass: HomeAssistant, data: dict[str, Any], device_id: str | None = None
+) -> dict[str, Any]:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
+    Pass device_id to keep an already registered device instead of registering a
+    new one with Toshiba, as re-authentication does.
     """
-    device_id = f"{random.getrandbits(64):016x}"
+    if device_id is None:
+        device_id = f"{random.getrandbits(64):016x}"
 
     _LOGGER.debug("Toshiba validate input %s %s", data["username"], device_id)
 
@@ -104,9 +109,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
-    async def async_step_reauth(
-        self, entry_data: Mapping[str, Any]
-    ) -> FlowResult:
+    async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> FlowResult:
         """Handle re-authentication when the stored credentials stop working."""
         return await self.async_step_reauth_confirm()
 
@@ -118,9 +121,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         The username is fixed to the existing entry; only the password is asked,
         since re-auth is triggered for the same account whose credentials expired.
         """
-        reauth_entry = self.hass.config_entries.async_get_entry(
-            self.context["entry_id"]
-        )
+        reauth_entry = self._get_reauth_entry()
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -131,6 +132,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         "username": reauth_entry.data["username"],
                         "password": user_input["password"],
                     },
+                    reauth_entry.data.get("device_id"),
                 )
             except CannotConnect:
                 errors["base"] = "cannot_connect"
