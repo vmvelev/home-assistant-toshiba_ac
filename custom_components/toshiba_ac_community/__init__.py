@@ -112,6 +112,13 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Toshiba AC from a config entry."""
+    # Backfill unique_id on entries created before it was set, so the
+    # duplicate-account guard in the config flow also protects them.
+    if entry.unique_id is None and entry.data.get("consumer_id"):
+        hass.config_entries.async_update_entry(
+            entry, unique_id=entry.data["consumer_id"]
+        )
+
     # Never pass a stored SAS token on startup -- it may have expired while HA
     # was stopped. Always fetch a fresh one via RegisterMobileDevice.
     # The access token IS reused: it is long lived, and skipping /Login avoids
