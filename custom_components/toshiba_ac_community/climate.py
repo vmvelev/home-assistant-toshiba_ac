@@ -15,6 +15,7 @@ from toshiba_ac.device import (
     ToshibaAcSelfCleaning,
     ToshibaAcStatus,
     ToshibaAcSwingMode,
+    ToshibaAcVerticalSwingMode,
 )
 from toshiba_ac.utils import pretty_enum_name
 
@@ -48,6 +49,19 @@ HORIZONTAL_SWING_TO_NAME = {
     for e in ToshibaAcHorizontalSwingMode
 }
 NAME_TO_HORIZONTAL_SWING = {v: k for k, v in HORIZONTAL_SWING_TO_NAME.items()}
+
+# Legacy presets that only describe the vertical vane. On independent-axis units
+# the legacy byte also carries "horizontal none", so these must go through the
+# per-axis call, which re-sends the current horizontal position (PR #34 reports).
+SWING_TO_VERTICAL = {
+    ToshibaAcSwingMode.OFF: ToshibaAcVerticalSwingMode.NONE,
+    ToshibaAcSwingMode.SWING_VERTICAL: ToshibaAcVerticalSwingMode.SWING,
+    ToshibaAcSwingMode.FIXED_1: ToshibaAcVerticalSwingMode.FIXED_1,
+    ToshibaAcSwingMode.FIXED_2: ToshibaAcVerticalSwingMode.FIXED_2,
+    ToshibaAcSwingMode.FIXED_3: ToshibaAcVerticalSwingMode.FIXED_3,
+    ToshibaAcSwingMode.FIXED_4: ToshibaAcVerticalSwingMode.FIXED_4,
+    ToshibaAcSwingMode.FIXED_5: ToshibaAcVerticalSwingMode.FIXED_5,
+}
 
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -232,7 +246,12 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         """Set new target swing operation."""
         swing_mode = swing_mode.title().replace("_", " ")
         feature_list_id = get_feature_by_name(list(ToshibaAcSwingMode), swing_mode)
-        if feature_list_id is not None:
+        if feature_list_id is None:
+            return
+        vertical = SWING_TO_VERTICAL.get(feature_list_id)
+        if vertical is not None and self._device.supports_independent_swing:
+            await self._device.set_ac_vertical_swing_mode(vertical)
+        else:
             await self._device.set_ac_swing_mode(feature_list_id)
 
     @property
