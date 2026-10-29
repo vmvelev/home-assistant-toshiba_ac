@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Home Assistant custom component integration for Toshiba AC units. Connects to Toshiba's cloud service via the `toshiba_ac` library to control air conditioning units and retrieve status.
+Home Assistant custom component integration for Toshiba AC units. Connects to Toshiba's cloud service via the `toshiba_ac_community` library to control air conditioning units and retrieve status.
 
 ## Development Environment
 
@@ -36,7 +36,7 @@ The repository has no local test suite. Validation happens via GitHub Actions:
 ## Dependencies
 
 ### External Library
-The integration depends on the `toshiba_ac` library (import name unchanged), distributed on PyPI as `toshiba-ac-community` from this project's own fork `github.com/vmvelev/Toshiba-AC-control` (forked from `github.com/KaSroka/Toshiba-AC-control`):
+The integration depends on the `toshiba_ac_community` library (import name `toshiba_ac` before 0.8.0), distributed on PyPI as `toshiba-ac-community` from this project's own fork `github.com/vmvelev/Toshiba-AC-control` (forked from `github.com/KaSroka/Toshiba-AC-control`):
 - Handles authentication with Toshiba cloud HTTP API
 - Manages Azure AMQP connection for real-time device state updates
 - Provides `ToshibaAcDeviceManager` and `ToshibaAcDevice` classes

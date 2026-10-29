@@ -1,0 +1,7 @@
+Use the toshiba_ac_community import name from library 0.8.0
+
+Library 0.8.0 renames its import package from toshiba_ac to
+toshiba_ac_community, so it no longer shares a directory with the upstream
+toshiba-ac package used by the original Toshiba AC integration. Installing
+both integrations no longer lets one overwrite the other's library files.
+Fixes #46.

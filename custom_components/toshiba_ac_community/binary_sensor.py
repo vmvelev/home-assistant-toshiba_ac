@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 
-from toshiba_ac.device import ToshibaAcDevice, ToshibaAcSelfCleaning
+from toshiba_ac_community.device import ToshibaAcDevice, ToshibaAcSelfCleaning
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,

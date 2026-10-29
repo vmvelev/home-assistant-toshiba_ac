@@ -5,7 +5,7 @@ from collections.abc import Mapping
 import logging
 from typing import Any
 
-from toshiba_ac.device import (
+from toshiba_ac_community.device import (
     ToshibaAcDevice,
     ToshibaAcFanMode,
     ToshibaAcHorizontalSwingMode,
@@ -17,7 +17,7 @@ from toshiba_ac.device import (
     ToshibaAcSwingMode,
     ToshibaAcVerticalSwingMode,
 )
-from toshiba_ac.utils import pretty_enum_name
+from toshiba_ac_community.utils import pretty_enum_name
 
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
