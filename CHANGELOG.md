@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.8.4] - 2026-08-29
+
+This release bundles protocol library **`toshiba-ac-community` 0.7.2**.
+
+### Added - reauthentication flow
+
+When your stored credentials stop working (for example after a password change), Home Assistant now prompts for the new password instead of failing silently until you delete and re-add the integration ([#42](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/42) by [@lackas](https://github.com/lackas)).
+
+### Fixed
+
+- The device registry showed an internal account-derived id as the device model; it now shows the real model id, e.g. "Model 3" ([#41](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/41) by [@lackas](https://github.com/lackas), closing the last part of [#4](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/4)).
+- The same Toshiba account could be added twice, producing duplicate devices ([#43](https://github.com/vmvelev/home-assistant-toshiba_ac/pull/43) by [@lackas](https://github.com/lackas)).
+- Library 0.7.2: a wrong password is no longer retried. Previously three rapid login attempts counted toward Toshiba's account lockout.
+
+## [2026.8.3] - 2026-08-20
+
+This release bundles protocol library **`toshiba-ac-community` 0.7.1**.
+
+### Added - self-cleaning is now visible
+
+Units that support self-cleaning get a new **Self cleaning** binary sensor, on while the unit runs its post-operation clean cycle (typically ~30 minutes of fan drying after you turn the AC off). Previously the cycle was only visible as the climate entity's "cleaning" preset, which was easy to miss.
+
+The climate entity now also shows the unit as **off** during self-cleaning, matching the Toshiba app, instead of appearing stuck on in its last mode. Selecting a mode while cleaning powers the unit back on, which aborts the cycle - same as the app.
+
+### Fixed - full 5-16 °C range in 8 °C mode on model 3 units
+
+In 8 °C frost-protection mode the target temperature was capped at 13 °C for all units, but model 3 units (e.g. Shorai Edge) genuinely accept 5-16 °C ([#35](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/35), reported by [@ThomasRobertFr](https://github.com/ThomasRobertFr)). The ceiling is now per-model: 16 °C on model 3, 13 °C otherwise. Verified on the reporter's Shorai Edge data and live on three additional model 3 units.
+
+### Changed - diagnostics include model identification
+
+The diagnostics download now includes each unit's `merit_feature` and `ac_model_id` - the exact data device-support investigations keep asking reporters to dig out of debug logs.
+
 ## [2026.8.2] - 2026-08-15
 
 ### Fixed - adding the integration works again

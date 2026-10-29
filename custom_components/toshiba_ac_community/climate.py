@@ -118,8 +118,27 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
 
     @property
     def is_on(self):
-        """Return True if the device is on or completely off."""
-        return self._device.ac_status == ToshibaAcStatus.ON
+        """Return True if the device is running at the user's request.
+
+        During self-cleaning the AC reports its status as ON (the fan dries
+        the heat exchanger), but the user turned it off and the Toshiba app
+        shows it as off - treat it as off here too. Turning it back on goes
+        through set_ac_status(ON), which clears the cleaning flag.
+        """
+        return (
+            self._device.ac_status == ToshibaAcStatus.ON
+            and self._device.ac_self_cleaning != ToshibaAcSelfCleaning.ON
+        )
+
+    def _heating_8c_max_temp(self) -> int:
+        """Return the ceiling for 8C frost-protection mode on this unit.
+
+        Model id 3 units (e.g. Shorai Edge) accept 5-16, model id 2 units
+        (e.g. Shorai+) cap at 13 (#35). If a model 3 unit turns out to cap
+        at 13, the failure is benign: the unit reports its real state back
+        and the UI corrects itself.
+        """
+        return 16 if self._device.ac_model_id == "3" else 13
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
@@ -131,8 +150,8 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
             and self._device.ac_merit_a == ToshibaAcMeritA.HEATING_8C
         ):
             # upper limit for target temp
-            if set_temperature > 13:
-                set_temperature = 13
+            if set_temperature > self._heating_8c_max_temp():
+                set_temperature = self._heating_8c_max_temp()
             # lower limit for target temp
             elif set_temperature < 5:
                 set_temperature = 5
@@ -306,7 +325,7 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
             hasattr(self._device, "ac_merit_a")
             and self._device.ac_merit_a == ToshibaAcMeritA.HEATING_8C
         ):
-            return 13
+            return self._heating_8c_max_temp()
         return 30
 
     @property
