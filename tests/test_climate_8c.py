@@ -16,9 +16,9 @@ from unittest.mock import AsyncMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from toshiba_ac.device import ToshibaAcDevice, ToshibaAcMeritA
-from toshiba_ac.utils.amqp_api import ToshibaAcAmqpApi
-from toshiba_ac.utils.http_api import ToshibaAcHttpApi
+from toshiba_ac_community.device import ToshibaAcDevice, ToshibaAcMeritA
+from toshiba_ac_community.utils.amqp_api import ToshibaAcAmqpApi
+from toshiba_ac_community.utils.http_api import ToshibaAcHttpApi
 
 from custom_components.toshiba_ac_community.climate import ToshibaClimate
 

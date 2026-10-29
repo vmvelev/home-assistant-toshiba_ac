@@ -123,7 +123,7 @@ logger:
   default: warning
   logs:
     custom_components.toshiba_ac_community: debug
-    toshiba_ac: debug
+    toshiba_ac_community: debug
 ```
 
 ### Reporting Issues

@@ -16,8 +16,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import toshiba_ac.device_manager  # noqa: F401  # must precede http_api (circular import)
-from toshiba_ac.utils.http_api import ToshibaAcHttpApi, ToshibaAcHttpApiAuthError
+import toshiba_ac_community.device_manager  # noqa: F401  # must precede http_api (circular import)
+from toshiba_ac_community.utils.http_api import (
+    ToshibaAcHttpApi,
+    ToshibaAcHttpApiAuthError,
+)
 
 from custom_components.toshiba_ac_community.config_flow import (
     InvalidAuth,
@@ -46,7 +49,8 @@ def _network_stubs(connect=None):
             ToshibaAcHttpApi, "register_client", AsyncMock(return_value="sas-token")
         ),
         patch(
-            "toshiba_ac.device_manager.ToshibaAcAmqpApi", MagicMock(return_value=amqp)
+            "toshiba_ac_community.device_manager.ToshibaAcAmqpApi",
+            MagicMock(return_value=amqp),
         ),
         amqp,
     )

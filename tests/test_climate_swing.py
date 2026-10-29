@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from toshiba_ac.device import (
+from toshiba_ac_community.device import (
     ToshibaAcFanMode,
     ToshibaAcHorizontalSwingMode,
     ToshibaAcSwingMode,
