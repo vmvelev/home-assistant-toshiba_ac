@@ -92,6 +92,7 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
         | ClimateEntityFeature.TURN_OFF
     )
     _attr_target_temperature_step = 1
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, toshiba_device: ToshibaAcDevice):
@@ -299,14 +300,18 @@ class ToshibaClimate(ToshibaAcStateEntity, ClimateEntity):
             await self._device.set_ac_horizontal_swing_mode(mode)
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         """Return the current temperature."""
         return self._device.ac_indoor_temperature
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the temperature we try to reach."""
         return self._device.ac_temperature
+
+    # Old names kept because Home Assistant before 2026.11 reads only these
+    current_temperature = native_current_temperature
+    target_temperature = native_target_temperature
 
     @property
     def min_temp(self) -> float:
