@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.11.0] - 2026-11-10
+
+### Fixed - no more deprecation warnings on Home Assistant 2026.11
+
+Home Assistant 2026.11 renamed the climate temperature properties and logged three warnings about `ToshibaClimate` using the deprecated `_attr_temperature_unit`, `current_temperature` and `target_temperature` ([#48](https://github.com/vmvelev/home-assistant-toshiba_ac/issues/48)). The climate entity now provides the new `native_*` names, so the warnings are gone. Older Home Assistant versions keep working as before. Reported by [@chrisandsally](https://github.com/chrisandsally).
+
 ## [2026.10.0] - 2026-10-29
 
 This release bundles protocol library **`toshiba-ac-community` 0.8.0**.
