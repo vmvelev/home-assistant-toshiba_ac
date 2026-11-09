@@ -53,8 +53,8 @@ Current releases use **`toshiba-ac-community` 0.6.0** (the protocol library main
 
 | Your situation | Suggestion |
 |----------------|------------|
-| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **Toshiba AC (Community)** - this fork, available directly in HACS |
-| You prefer the original integration and upstream is responding to issues | **Toshiba AC** - [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) in HACS |
+| Failures after every HA restart, false "reconfigure" after 403 at startup, or disconnect/reload issues | **Toshiba AC (Community)** - this fork, available directly in the Marketplace (or HACS on Home Assistant 2026.10 and older) |
+| You prefer the original integration and upstream is responding to issues | **Toshiba AC** - [h4de5/home-assistant-toshiba_ac](https://github.com/h4de5/home-assistant-toshiba_ac) |
 | Not sure | Pick one, note the **integration version** in bug reports (for example `2026.5.5`), and check whether the [official Toshiba app](https://play.google.com/store/apps/details?id=jp.co.toshiba_carrier.ac_control) works |
 
 ### Upstream and maintenance
@@ -69,7 +69,15 @@ You need a supported (or compatible) Toshiba AC device with either a built-in Wi
 
 ## Installation
 
-### Installation with HACS
+### Installation with the Marketplace (Home Assistant 2026.11 and newer)
+
+Home Assistant 2026.11 replaced HACS with the built-in **Marketplace**. If you used HACS before, your installation was moved over automatically and updates now show up there.
+
+1. Open **Settings -> Marketplace**, search for **Toshiba AC (Community)** and click **Install**
+2. Reboot Home Assistant
+3. Follow the common integration manual below
+
+### or: Installation with HACS (Home Assistant 2026.10 and older)
 
 1. Search for **Toshiba AC (Community)** in HACS and click **Download**
 2. Reboot Home Assistant
